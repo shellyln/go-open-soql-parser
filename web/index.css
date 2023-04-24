@@ -1,0 +1,113 @@
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background-color: rgb(140, 140, 140);
+}
+::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+body {
+    background-color: #282828;
+    color: #eee;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        "Segoe UI",
+        "Noto Sans",
+        Helvetica,
+        Arial,
+        sans-serif,
+        "Apple Color Emoji",
+        "Segoe UI Emoji";
+}
+
+select {
+    background-color: #282828;
+    color: #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+button {
+    border-radius: 2px;
+    border-width: 1px;
+    border-color: #505050;
+    background-color: #3b3b3b;
+    color: #eee;
+}
+button,
+button::before,
+button::after {
+    transition: all .3s;
+}
+button:hover {
+    background-color: #510000;
+}
+button:active {
+    background-color: #bb0000;
+}
+
+input {
+    accent-color: #bb0000;
+}
+
+.top-nav {
+    display: flex;
+}
+.top-nav .title {
+    margin: 0 auto 0 0; color: #ddd;
+}
+.top-nav .title .logo {
+    width:20px; margin-right: 0.55rem; vertical-align: middle;
+}
+#version {
+    font-size: x-small;
+}
+.top-nav .sub {
+    font-size: smaller; color: #bbb;
+}
+.top-nav .sub a {
+    color: unset;
+}
+
+.commands-area {
+    padding: 0 3px;
+}
+.commands-area .commands-area-inner {
+    display: flex;
+}
+.commands-area .commands-area-inner .left {
+    margin: 0 auto 0 0;
+}
+.commands-area .commands-area-inner .left span.indent {
+    margin-left: 2em;
+}
+.commands-area .commands-area-inner .left span.input {
+    margin-left: 1em;
+}
+#copied {
+    background-color: #343434;
+    color: rgb(120, 212, 120);
+    display: none;
+    border-radius: 2px;
+    padding: 0 2px;
+    font-size: smaller;
+    font-weight: bold;
+    vertical-align: top;
+}
+
+.input-area .CodeMirror {
+    border: 1px solid #4f4f4f;
+    height: calc((100vh - 70px) * 0.66);
+    margin: 3px;
+}
+.output-area .CodeMirror {
+    border: 1px solid #4f4f4f;
+    height: calc((100vh - 70px) * 0.33);
+    margin: 3px;
+}

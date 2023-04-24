@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Go WebAssembly Open SOQL query parser</title>
+
+    <script src="wasm_exec.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.css"
+        integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/theme/dracula.min.css"
+        integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/codemirror.min.js"
+        integrity="sha512-rdFIN28+neM8H8zNsjRClhJb1fIYby2YCNmoqwnqBDEvZgpcp7MJiX8Wd+Oi6KcJOMOuvGztjrsI59rly9BsVQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/mode/javascript/javascript.min.js"
+        integrity="sha512-Cbz+kvn+l5pi5HfXsEB/FYgZVKjGIhOgYNBwj4W2IHP2y8r3AdyDCQRnEUqIQ+6aJjygKPTyaNT2eIihaykJlw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.11/mode/sql/sql.min.js"
+        integrity="sha512-fb0A/RjJvLbWBSNDDNRUER4LHrkVQjlEs3a2myQH047y9+I6wZAZOboHn+EA7ZcEcVwSiH3okO/+XzMlGPqcow=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="./index.css" />
+
+    <script>
+        {
+            const go = new Go();
+
+            // https://github.com/tinygo-org/tinygo/issues1140#issuecomment-671261465
+            //go.importObject.env["syscall/js.finalizeRef"] = ()=> {};
+
+            WebAssembly.instantiateStreaming(fetch("go.wasm"), go.importObject).then((result) => {
+                const mod = result.module;
+                go.run(result.instance);
+                globalThis.goWasmExports = result.instance.exports;
+
+                globalThis.rebootGoApplication = async () => {
+                    const inst = await WebAssembly.instantiate(mod, go.importObject);
+                    go.run(inst);
+                }
+
+                const ver = getVersion()
+                document.querySelector('#version').innerHTML = getVersion();
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="top-nav">
+        <h4 class="title"><img
+            class="logo" alt="logo"
+            src="https://shellyln.github.io/assets/image/open-soql-logo.svg"
+            title="Open SOQL logo"
+            >Go WebAssembly Open SOQL query parser</h4>
+    </div>
+    <div>
+        <div class="input-area">
+            <textarea id="soql" name="soql" rows="35" cols="120"
+>SELECT
+  -- FIELDS(all)
+    acc.Id xid
+  , foo__r.bar__r.zzz
+  , foo__r.yyy
+  , con.Name xname
+  , con.acc.ddd xddd
+  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
+  , FLAT(acc.Name)
+  , (SELECT Id FROM con.Departments) qwerty
+FROM
+    Contact con
+  , con.Account acc
+  , PPP.QQQ.RRR r3
+WHERE
+    not (Name like 'a%' or Name like 'b%')
+    and
+    Name in ('a', 'b', 'c', null)
+    and
+    Name in (select x from Foobar)
+    and
+    Name &gt; 0001-01-02
+    and
+    (((Name &gt; 0001-01-02T01:01:01.123456789Z)
+    or
+    Name = :param1))
+    and
+    con.Name = acc.Name
+    and
+    LEN(con.Name) > 0
+GROUP BY
+    acc.Id
+  , acc.Name
+  , con.Name
+  , xid
+  , foo__r.bar__r.zzz
+  , foo__r.yyy
+  , con.acc.ddd
+HAVING
+    LEN(MAX(con.Name)) &gt; FOO(0)
+    and
+    LEN(MAX(con.Name)) &gt; 0
+ORDER BY
+    acc.Id desc nulls last
+  , con.Name
+OFFSET 1000 LIMIT 100
+FOR update viewstat, tracking
+</textarea>
+        </div>
+        <div class="commands-area">
+            <form name="form1">
+                <div class="commands-area-inner">
+                    <div class="left">
+                        <button onclick="execParse(event)">Parse SOQL</button>
+                    </div>
+                    <div>
+                        <div id="copied">✓ Copied</div>
+                        <button onclick="copyToClipboard(event)">📋Copy</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div>
+        <div class="output-area">
+            <textarea id="result-area"></textarea>
+        </div>
+    </div>
+    <script src="./index.js"></script>
+</body>
+</html>
