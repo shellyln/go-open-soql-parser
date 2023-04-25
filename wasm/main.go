@@ -44,10 +44,15 @@ func parseSoql(this js.Value, args []js.Value) interface{} {
 	return js.ValueOf(buf.String())
 }
 
+func getVersion(this js.Value, args []js.Value) interface{} {
+	return js.ValueOf(Version)
+}
+
 func main() {
 	println("Go WebAssembly Initialized")
 
 	js.Global().Set("parseSoql", js.FuncOf(parseSoql))
+	js.Global().Set("getVersion", js.FuncOf(getVersion))
 
 	select {}
 }
