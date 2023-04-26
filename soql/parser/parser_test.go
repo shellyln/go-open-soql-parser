@@ -61,15 +61,28 @@ func TestParse(t *testing.T) {
 		wantErr: false,
 	}, {
 		name:    "co-related subquery 1",
-		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`}, // BUG:
+		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`},
 		want:    nil,
-		wantErr: false,
+		wantErr: true,
+	}, {
+		name:    "co-related subquery 2",
+		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=con.id) qwerty FROM Contact con`},
+		want:    nil,
+		wantErr: true,
+	}, {
+		name:    "co-related subquery 3",
+		args:    args{s: `SELECT (SELECT Id, con.Id FROM con.Departments) qwerty FROM Contact con`},
+		want:    nil,
+		wantErr: true,
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := parser.Parse(tt.args.s)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
 				return
 			}
 
@@ -193,6 +206,9 @@ func TestParse2(t *testing.T) {
 			got, err := parser.Parse(tt.args.s)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
 				return
 			}
 

@@ -100,19 +100,22 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 	for i := 0; i < len(q.Fields); i++ {
 		field := q.Fields[i]
-		if err := ctx.normalizeFieldName(
-			&field, soqlQueryPlace_Select, q,
-			objNameMap, groupingFields, normalizeFieldNameConf{
-				isSelectClause:          true,
-				isWhereClause:           false,
-				isHavingClause:          false,
-				isFunctionParameter:     false,
-				allowUnregisteredObject: true,
-			}); err != nil {
 
-			return err
+		if field.Type != SoqlFieldInfo_SubQuery {
+			if err := ctx.normalizeFieldName(
+				&field, soqlQueryPlace_Select, q,
+				objNameMap, groupingFields, normalizeFieldNameConf{
+					isSelectClause:          true,
+					isWhereClause:           false,
+					isHavingClause:          false,
+					isFunctionParameter:     false,
+					allowUnregisteredObject: true,
+				}); err != nil {
+
+				return err
+			}
+			q.Fields[i] = field
 		}
-		q.Fields[i] = field
 
 		if field.AliasName != "" {
 			aliasName := strings.ToLower(field.AliasName)
@@ -268,6 +271,26 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 	if err := ctx.buildPerObjectInfo(q); err != nil {
 		return err
+	}
+
+	for i := 0; i < len(q.Fields); i++ {
+		field := q.Fields[i]
+
+		if field.Type == SoqlFieldInfo_SubQuery {
+			if err := ctx.normalizeFieldName(
+				&field, soqlQueryPlace_Select, q,
+				objNameMap, groupingFields, normalizeFieldNameConf{
+					isSelectClause:          true,
+					isWhereClause:           false,
+					isHavingClause:          false,
+					isFunctionParameter:     false,
+					allowUnregisteredObject: true,
+				}); err != nil {
+
+				return err
+			}
+			q.Fields[i] = field
+		}
 	}
 
 	return nil
