@@ -147,7 +147,15 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 			if !conf.isFunctionParameter && (conf.isHavingClause || (conf.isSelectClause && q.IsAggregation)) {
 				if field.Key != "" {
 					if _, ok := groupingFields[field.Key]; !ok {
-						return errors.New("The item must be included in a Group By clause: " + strings.Join(field.Name, "."))
+						if field.AliasName != "" {
+							nm := make([]string, 0, len(q.From[0].Name)+1)
+							nm = append(nm, q.From[0].Name...)
+							nm = append(nm, field.AliasName)
+							_, ok = groupingFields[nameutil.MakeDottedKeyIgnoreCase(nm, len(nm))]
+						}
+						if !ok {
+							return errors.New("The item must be included in a Group By clause: " + strings.Join(field.Name, "."))
+						}
 					}
 				}
 			}
@@ -268,7 +276,15 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 					param := &field.Parameters[i]
 					if param.Type == SoqlFieldInfo_Field && param.Key != "" {
 						if _, ok := groupingFields[param.Key]; !ok {
-							return errors.New("The item must be included in a Group By clause: " + strings.Join(param.Name, "."))
+							if param.AliasName != "" {
+								nm := make([]string, 0, len(q.From[0].Name)+1)
+								nm = append(nm, q.From[0].Name...)
+								nm = append(nm, param.AliasName)
+								_, ok = groupingFields[nameutil.MakeDottedKeyIgnoreCase(nm, len(nm))]
+							}
+							if !ok {
+								return errors.New("The item must be included in a Group By clause: " + strings.Join(param.Name, "."))
+							}
 						}
 					}
 				}

@@ -166,8 +166,8 @@ func TestParse2(t *testing.T) {
 				LEN(con.Name) > 0
 			GROUP BY
 			    acc.Name
-			  , acc.Id
-			  --, xid
+			  --, acc.Id
+			  , xid
 			  , con.Name
 			  , foo__r.bar__r.zzz
 			  , foo__r.yyy

@@ -129,14 +129,13 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		for i := 0; i < len(q.GroupBy); i++ {
 			field := q.GroupBy[i]
 
-			if len(field.Name) == 2 {
-				if p, ok := fieldAliasMap[field.Name[1]]; ok {
+			if len(field.Name) == len(q.From[0].Name)+1 {
+				if p, ok := fieldAliasMap[field.Name[len(field.Name)-1]]; ok {
 					delete(groupingFields, field.Key)
 					q.GroupBy[i] = *p
 					groupingFields[p.Key] = struct{}{}
 				}
 			}
-
 		}
 	}
 
@@ -197,8 +196,6 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 	for i := 0; i < len(q.Fields); i++ {
 		preScanFunctionFields(&q.Fields[i], q)
 	}
-
-	// NOTE:
 
 	if q.OrderBy != nil {
 		for i := 0; i < len(q.OrderBy); i++ {
