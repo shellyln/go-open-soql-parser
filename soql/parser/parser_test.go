@@ -63,12 +63,12 @@ func TestParse(t *testing.T) {
 		name:    "co-related subquery 1",
 		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`},
 		want:    nil,
-		wantErr: true,
+		wantErr: false,
 	}, {
 		name:    "co-related subquery 2",
 		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=con.id) qwerty FROM Contact con`},
 		want:    nil,
-		wantErr: true,
+		wantErr: false,
 	}, {
 		name:    "co-related subquery 3",
 		args:    args{s: `SELECT (SELECT Id, con.Id FROM con.Departments) qwerty FROM Contact con`},
@@ -154,7 +154,7 @@ func TestParse2(t *testing.T) {
 			  , con.acc.ddd xddd
 			  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
 			  , FLAT(acc.Name)
-			  , (SELECT Id FROM con.Departments) qwerty
+			  , (SELECT Id FROM con.Departments where uuu=con.Zzz) qwerty
 			FROM
 			    Contact con
 			  , con.Account acc

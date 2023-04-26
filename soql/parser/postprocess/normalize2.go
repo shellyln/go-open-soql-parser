@@ -38,8 +38,6 @@ func (ctx *normalizeQueryContext) addUnselectedSelectFields(
 			}
 		case SoqlFieldInfo_Function:
 			ctx.addUnselectedSelectFields(q, fields[i].Parameters, fieldMap, level+1)
-		case SoqlFieldInfo_SubQuery:
-			ctx.addUnselectedFields(fields[i].SubQuery)
 		}
 	}
 }
