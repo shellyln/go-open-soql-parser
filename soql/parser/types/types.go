@@ -90,6 +90,7 @@ type SoqlFieldInfo struct {
 	ColumnId    int               `json:"columnId,omitempty"`    // (internal use) for all; 1-based; If 0, it is not set.; Unique column Id across all main and sub queries
 	ViewNo      int               `json:"viewNo,omitempty"`      // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
 	Key         string            `json:"-"`                     // (internal use) Base64-encoded, dot-delimited Name field value
+	ColIndex    int               `json:"colIndex"`              // Column index in the object
 }
 
 type soqlFieldInfo_unmarshal struct {

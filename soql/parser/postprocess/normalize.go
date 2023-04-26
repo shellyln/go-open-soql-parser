@@ -73,6 +73,73 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 	}
 
+	groupingFields := make(map[string]struct{})
+
+	if q.GroupBy != nil {
+		for i := 0; i < len(q.GroupBy); i++ {
+			field := q.GroupBy[i]
+
+			if err := ctx.normalizeFieldName(
+				&field, soqlQueryPlace_ConditionalOperand, q,
+				objNameMap, nil, normalizeFieldNameConf{
+					isSelectClause:          false,
+					isWhereClause:           false,
+					isHavingClause:          false,
+					isFunctionParameter:     false,
+					allowUnregisteredObject: true,
+				}); err != nil {
+
+				return err
+			}
+			q.GroupBy[i] = field
+			groupingFields[field.Key] = struct{}{}
+		}
+	}
+
+	fieldAliasMap := make(map[string]*SoqlFieldInfo)
+
+	for i := 0; i < len(q.Fields); i++ {
+		field := q.Fields[i]
+		if err := ctx.normalizeFieldName(
+			&field, soqlQueryPlace_Select, q,
+			objNameMap, groupingFields, normalizeFieldNameConf{
+				isSelectClause:          true,
+				isWhereClause:           false,
+				isHavingClause:          false,
+				isFunctionParameter:     false,
+				allowUnregisteredObject: true,
+			}); err != nil {
+
+			return err
+		}
+		q.Fields[i] = field
+
+		if field.AliasName != "" {
+			aliasName := strings.ToLower(field.AliasName)
+
+			if _, ok := fieldAliasMap[aliasName]; !ok {
+				fieldAliasMap[aliasName] = &q.Fields[i]
+			} else {
+				return errors.New("Duplicate field alias name found: " + field.AliasName)
+			}
+		}
+	}
+
+	if q.GroupBy != nil {
+		for i := 0; i < len(q.GroupBy); i++ {
+			field := q.GroupBy[i]
+
+			if len(field.Name) == 2 {
+				if p, ok := fieldAliasMap[field.Name[1]]; ok {
+					delete(groupingFields, field.Key)
+					q.GroupBy[i] = *p
+					groupingFields[p.Key] = struct{}{}
+				}
+			}
+
+		}
+	}
+
 	if q.Where != nil {
 		// NOTE: Distribute the not operator to each inner operators.
 		//       If the condition is reversed by not,
@@ -97,29 +164,6 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 				}
 			}
 			q.Where[i] = condition
-		}
-	}
-
-	groupingFields := make(map[string]struct{})
-
-	if q.GroupBy != nil {
-		for i := 0; i < len(q.GroupBy); i++ {
-			field := q.GroupBy[i]
-
-			if err := ctx.normalizeFieldName(
-				&field, soqlQueryPlace_ConditionalOperand, q,
-				objNameMap, nil, normalizeFieldNameConf{
-					isSelectClause:          false,
-					isWhereClause:           false,
-					isHavingClause:          false,
-					isFunctionParameter:     false,
-					allowUnregisteredObject: true,
-				}); err != nil {
-
-				return err
-			}
-			q.GroupBy[i] = field
-			groupingFields[field.Key] = struct{}{}
 		}
 	}
 
@@ -154,34 +198,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		preScanFunctionFields(&q.Fields[i], q)
 	}
 
-	fieldAliasMap := make(map[string]*SoqlFieldInfo)
-
-	for i := 0; i < len(q.Fields); i++ {
-		field := q.Fields[i]
-		if err := ctx.normalizeFieldName(
-			&field, soqlQueryPlace_Select, q,
-			objNameMap, groupingFields, normalizeFieldNameConf{
-				isSelectClause:          true,
-				isWhereClause:           false,
-				isHavingClause:          false,
-				isFunctionParameter:     false,
-				allowUnregisteredObject: true,
-			}); err != nil {
-
-			return err
-		}
-		q.Fields[i] = field
-
-		if field.AliasName != "" {
-			aliasName := strings.ToLower(field.AliasName)
-
-			if _, ok := fieldAliasMap[aliasName]; !ok {
-				fieldAliasMap[aliasName] = &q.Fields[i]
-			} else {
-				return errors.New("Duplicate field alias name found: " + field.AliasName)
-			}
-		}
-	}
+	// NOTE:
 
 	if q.OrderBy != nil {
 		for i := 0; i < len(q.OrderBy); i++ {
@@ -190,7 +207,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			aliasFound := false
 			if len(field.Name) == 1 {
 				if p, ok := fieldAliasMap[strings.ToLower(field.Name[0])]; ok {
-					field.Name = p.Name
+					field = *p
 					aliasFound = true
 				}
 			}
@@ -252,7 +269,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 	// TODO: Associate with schema.
 
-	if err := buildPerObjectInfo(q); err != nil {
+	if err := ctx.buildPerObjectInfo(q); err != nil {
 		return err
 	}
 
