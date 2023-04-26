@@ -56,6 +56,7 @@ func (ctx *normalizeQueryContext) addUnselectedConditionalFields(
 				switch conditions[i].Value.Type {
 				case SoqlFieldInfo_Field:
 					if _, ok := fieldMap[key]; !ok {
+						// TODO: check it is co-related (field in the ancestor object)
 						f := conditions[i].Value
 						fieldMap[key] = f.Name
 						f.NotSelected = true

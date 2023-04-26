@@ -322,7 +322,7 @@ func compactConditions(conditions []SoqlCondition) []SoqlCondition {
 }
 
 func (ctx *normalizeQueryContext) buildPerObjectInfo(q *SoqlQuery) error {
-	colIndexMap := make(map[string]int)
+	colIndexMap := make(map[string]int) // TODO: -> ctx
 
 	for i := 0; i < len(q.From); i++ {
 		perObjQuery := &SoqlQuery{
