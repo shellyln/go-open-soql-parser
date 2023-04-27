@@ -38,6 +38,8 @@ func (ctx *normalizeQueryContext) applyColIndexToFields(q *SoqlQuery, fields []S
 								q.Parent.Fields = append(q.Parent.Fields, fields[i])
 								q.Parent.From[j].PerObjectQuery.Fields = append(q.Parent.From[j].PerObjectQuery.Fields, fields[i])
 
+								// TODO: Delete fields[i] and shift the following?
+
 								isSet = true
 								break
 							}

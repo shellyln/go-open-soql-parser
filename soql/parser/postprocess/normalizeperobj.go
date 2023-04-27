@@ -88,7 +88,7 @@ CHECK_FIELDS:
 		}
 	}
 	if !hasConditionsOriginally {
-		// TODO:
+		// TODO: More conditions?
 		innerJoined = true
 	}
 
