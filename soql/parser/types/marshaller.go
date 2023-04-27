@@ -34,7 +34,7 @@ func (t *SoqlFieldInfo) UnmarshalJSON(b []byte) error {
 	t.Aggregated = t2.Aggregated
 	t.Hints = t2.Hints
 	t.ColumnId = t2.ColumnId
-	t.ViewNo = t2.ViewNo
+	t.ViewId = t2.ViewId
 	t.ColIndex = t2.ColIndex
 
 	if v, err := unmarshalSoqlFieldInfoValue(t2.Value, t2.Type); err != nil {

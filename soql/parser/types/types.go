@@ -89,7 +89,7 @@ type SoqlFieldInfo struct {
 	Hints       []SoqlQueryHint   `json:"hints,omitempty"`       // TODO: hints
 	ColumnId    int               `json:"columnId,omitempty"`    // (internal use) for all; 1-based; If 0, it is not set.; Unique column Id across all main and sub queries
 	ColIndex    int               `json:"colIndex"`              // Column index in the object
-	ViewNo      int               `json:"viewNo,omitempty"`      // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
+	ViewId      int               `json:"viewId,omitempty"`      // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
 	Key         string            `json:"-"`                     // (internal use) Base64-encoded, dot-delimited Name field value
 }
 
@@ -105,7 +105,7 @@ type soqlFieldInfo_unmarshal struct {
 	Hints       []SoqlQueryHint   `json:"hints,omitempty"`
 	ColumnId    int               `json:"columnId,omitempty"`
 	ColIndex    int               `json:"colIndex"`
-	ViewNo      int               `json:"viewNo,omitempty"`
+	ViewId      int               `json:"viewId,omitempty"`
 }
 
 type SoqlListItem struct {
@@ -134,6 +134,7 @@ type SoqlObjectInfo struct {
 	InnerJoin      bool            `json:"innerJoin,omitempty"`     // When this object is on the left side, an inner join is performed.
 	Hints          []SoqlQueryHint `json:"hints,omitempty"`         // TODO: hints
 	PerObjectQuery *SoqlQuery      `json:"-"`                       // A query that extracts only the filter and sort conditions and fields related to this object. A simple query, not including function calls, etc.
+	ViewId         int             `json:"viewId,omitempty"`        // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
 	Key            string          `json:"-"`                       // (internal use) Base64-encoded, dot-delimited Name field value
 }
 

@@ -10,6 +10,8 @@ import (
 )
 
 type normalizeQueryContext struct {
+	viewId      int
+	viewIdMap   map[string]int
 	columnId    int
 	columnIdMap map[string]int
 	colIndexMap map[string]int
@@ -29,6 +31,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			)
 		}
 
+		// TODO: -> ctx
 		objNameMap = make(map[string][]string) // dotted name (include alias) -> fully qualified name
 		// BUG: ^^^^^ Case of soqlQueryPlace_ConditionalOperand may be derived (duplicate) the objNameMap.
 	} else {
@@ -239,6 +242,16 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		return err
 	}
 
+	for i := 0; i < len(q.From); i++ {
+		if viewId, ok := ctx.viewIdMap[q.From[i].Key]; !ok {
+			q.From[i].ViewId = ctx.viewId
+			ctx.viewIdMap[q.From[i].Key] = ctx.viewId
+			ctx.viewId++
+		} else {
+			q.From[i].ViewId = viewId
+		}
+	}
+
 	// TODO: * check object graph when aggregation(group by)
 	//           * subquery on select clause is not allowed.
 	//           * ...
@@ -296,8 +309,10 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 	}
 
+	savedViewIdMap := ctx.viewIdMap
 	savedColumnIdMap := ctx.columnIdMap
 	savedColIndexMap := ctx.colIndexMap
+	ctx.viewIdMap = make(map[string]int)
 	ctx.columnIdMap = make(map[string]int)
 	ctx.colIndexMap = make(map[string]int)
 
@@ -343,6 +358,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 	}
 
+	ctx.viewIdMap = savedViewIdMap
 	ctx.columnIdMap = savedColumnIdMap
 	ctx.colIndexMap = savedColIndexMap
 
@@ -351,6 +367,8 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 func Normalize(q *SoqlQuery) error {
 	ctx := normalizeQueryContext{
+		viewId:      1,
+		viewIdMap:   make(map[string]int),
 		columnId:    1,
 		columnIdMap: make(map[string]int),
 		colIndexMap: map[string]int{},
