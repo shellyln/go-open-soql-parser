@@ -1,10 +1,14 @@
 package postprocess
 
 import (
+	"errors"
+	"strings"
+
+	"github.com/shellyln/go-nameutil/nameutil"
 	. "github.com/shellyln/go-open-soql-parser/soql/parser/types"
 )
 
-func (ctx *normalizeQueryContext) applyColIndexToFields(q *SoqlQuery, fields []SoqlFieldInfo) {
+func (ctx *normalizeQueryContext) applyColIndexToFields(q *SoqlQuery, fields []SoqlFieldInfo) error {
 	for i := range fields {
 		switch fields[i].Type {
 		case SoqlFieldInfo_Field:
@@ -13,16 +17,44 @@ func (ctx *normalizeQueryContext) applyColIndexToFields(q *SoqlQuery, fields []S
 			} else {
 				fields[i].ColIndex = -1
 			}
+
 			if len(fields[i].Name) <= len(q.From[0].Name) {
 				q.IsCorelated = true
-				// if fields[i].ColIndex == -1 {
-				// 	// TODO:
-				// }
+
+				if fields[i].ColIndex == -1 {
+					isSet := false
+
+					if q.Parent != nil {
+						ns := nameutil.GetNamespaceFromName(fields[i].Name)
+						nsKey := nameutil.MakeDottedKeyIgnoreCase(ns, len(ns))
+
+						for j := range q.Parent.From {
+							if q.Parent.From[j].Key == nsKey {
+								idx := len(q.Parent.From[j].PerObjectQuery.Fields)
+
+								ctx.colIndexMap[fields[i].Key] = idx
+								fields[i].ColIndex = idx
+
+								q.Parent.Fields = append(q.Parent.Fields, fields[i])
+								q.Parent.From[j].PerObjectQuery.Fields = append(q.Parent.From[j].PerObjectQuery.Fields, fields[i])
+
+								isSet = true
+								break
+							}
+						}
+					}
+					if !isSet {
+						return errors.New(
+							"An incorrect ancestor field of object referred to in the correlated subquery: " +
+								strings.Join(fields[i].Name, "."))
+					}
+				}
 			}
 		case SoqlFieldInfo_Function:
 			ctx.applyColIndexToFields(q, fields[i].Parameters)
 		}
 	}
+	return nil
 }
 
 func (ctx *normalizeQueryContext) applyColIndexToConditions(q *SoqlQuery, conditions []SoqlCondition) {
