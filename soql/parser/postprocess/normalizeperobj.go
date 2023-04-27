@@ -88,6 +88,7 @@ CHECK_FIELDS:
 		}
 	}
 	if !hasConditionsOriginally {
+		// TODO:
 		innerJoined = true
 	}
 
@@ -336,7 +337,9 @@ func (ctx *normalizeQueryContext) buildPerObjectInfo(q *SoqlQuery) error {
 		}
 	}
 
-	ctx.applyColIndex(q)
+	if err := ctx.applyColIndex(q); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(q.From); i++ {
 		perObjQuery := q.From[i].PerObjectQuery

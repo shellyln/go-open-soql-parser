@@ -51,13 +51,15 @@ func (ctx *normalizeQueryContext) applyColIndexToFields(q *SoqlQuery, fields []S
 				}
 			}
 		case SoqlFieldInfo_Function:
-			ctx.applyColIndexToFields(q, fields[i].Parameters)
+			if err := ctx.applyColIndexToFields(q, fields[i].Parameters); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func (ctx *normalizeQueryContext) applyColIndexToConditions(q *SoqlQuery, conditions []SoqlCondition) {
+func (ctx *normalizeQueryContext) applyColIndexToConditions(q *SoqlQuery, conditions []SoqlCondition) error {
 	for i := range conditions {
 		if conditions[i].Opcode == SoqlConditionOpcode_FieldInfo {
 			switch conditions[i].Value.Type {
@@ -68,10 +70,13 @@ func (ctx *normalizeQueryContext) applyColIndexToConditions(q *SoqlQuery, condit
 					conditions[i].Value.ColIndex = -1
 				}
 			case SoqlFieldInfo_Function:
-				ctx.applyColIndexToFields(q, conditions[i].Value.Parameters)
+				if err := ctx.applyColIndexToFields(q, conditions[i].Value.Parameters); err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }
 
 func (ctx *normalizeQueryContext) applyColIndexToOrders(orderBy []SoqlOrderByInfo) {
@@ -84,15 +89,25 @@ func (ctx *normalizeQueryContext) applyColIndexToOrders(orderBy []SoqlOrderByInf
 	}
 }
 
-func (ctx *normalizeQueryContext) applyColIndex(q *SoqlQuery) {
+func (ctx *normalizeQueryContext) applyColIndex(q *SoqlQuery) error {
 
-	ctx.applyColIndexToFields(q, q.Fields)
+	if err := ctx.applyColIndexToFields(q, q.Fields); err != nil {
+		return err
+	}
 
 	ctx.applyColIndexToOrders(q.OrderBy)
 
-	ctx.applyColIndexToFields(q, q.GroupBy)
+	if err := ctx.applyColIndexToFields(q, q.GroupBy); err != nil {
+		return err
+	}
 
-	ctx.applyColIndexToConditions(q, q.Where)
+	if err := ctx.applyColIndexToConditions(q, q.Where); err != nil {
+		return err
+	}
 
-	ctx.applyColIndexToConditions(q, q.Having)
+	if err := ctx.applyColIndexToConditions(q, q.Having); err != nil {
+		return err
+	}
+
+	return nil
 }
