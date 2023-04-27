@@ -157,6 +157,12 @@ func (ctx *normalizeQueryContext) assignColumnIdToField(
 			} else {
 				field.ColumnId = id
 			}
+
+			ns := nameutil.GetNamespaceFromName(field.Name)
+			nsKey := nameutil.MakeDottedKeyIgnoreCase(ns, len(ns))
+			if viewId, ok := ctx.viewIdMap[nsKey]; ok {
+				field.ViewId = viewId
+			}
 		case SoqlFieldInfo_Function:
 			if (!aggregated && !isFunctionParameter) || (aggregated && field.Aggregated) {
 				field.ColumnId = ctx.columnId
@@ -165,6 +171,12 @@ func (ctx *normalizeQueryContext) assignColumnIdToField(
 		case SoqlFieldInfo_FieldSet, SoqlFieldInfo_SubQuery:
 			field.ColumnId = ctx.columnId
 			ctx.columnId++
+
+			ns := nameutil.GetNamespaceFromName(field.Name)
+			nsKey := nameutil.MakeDottedKeyIgnoreCase(ns, len(ns))
+			if viewId, ok := ctx.viewIdMap[nsKey]; ok {
+				field.ViewId = viewId
+			}
 		}
 	}
 

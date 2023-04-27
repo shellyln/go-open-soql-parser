@@ -31,7 +31,6 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			)
 		}
 
-		// TODO: -> ctx
 		objNameMap = make(map[string][]string) // dotted name (include alias) -> fully qualified name
 		// BUG: ^^^^^ Case of soqlQueryPlace_ConditionalOperand may be derived (duplicate) the objNameMap.
 	} else {

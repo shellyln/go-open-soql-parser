@@ -161,7 +161,7 @@ func TestParse2(t *testing.T) {
 			  , con.acc.ddd xddd
 			  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
 			  , FLAT(acc.Name)
-			  , (SELECT Id FROM con.Departments where uuu=con.Zzz) qwerty
+			  , (SELECT Id FROM con.Departments where uuu=con.Zzz and vvv=con.Id) qwerty
 			FROM
 			    Contact con
 			  , con.Account acc
