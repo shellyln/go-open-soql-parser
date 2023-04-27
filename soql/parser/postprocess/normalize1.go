@@ -209,6 +209,21 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 
 				qualifyName()
 
+				key := nameutil.MakeDottedKeyIgnoreCase(field.Name, len(field.Name)-1)
+				fullyQualifiedName, ok := objNameMap[key]
+
+				if !ok {
+					return errors.New(
+						"Field set 'Fields()' parameter refers unknown object: " +
+							strings.Join(field.Name, "."))
+				}
+
+				fqnLen := len(fullyQualifiedName)
+				s := make([]string, 0, fqnLen+1)
+				s = append(s, fullyQualifiedName...)
+				s = append(s, field.Name[len(field.Name)-1])
+				field.Name = s
+
 			case "count":
 				switch len(field.Parameters) {
 				case 0:

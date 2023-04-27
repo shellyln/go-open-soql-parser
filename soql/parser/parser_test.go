@@ -61,11 +61,10 @@ func TestParse(t *testing.T) {
 		want:    nil,
 		wantErr: false,
 	}, {
-		name:     "co-related subquery 1",
-		args:     args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`},
-		want:     nil,
-		wantErr:  false,
-		dbgBreak: true,
+		name:    "co-related subquery 1",
+		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`},
+		want:    nil,
+		wantErr: false,
 	}, {
 		name:    "co-related subquery 2",
 		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=con.id) qwerty FROM Contact con`},
@@ -76,6 +75,17 @@ func TestParse(t *testing.T) {
 		args:    args{s: `SELECT (SELECT Id, con.Id FROM con.Departments) qwerty FROM Contact con`},
 		want:    nil,
 		wantErr: true,
+	}, {
+		name:    "fieldset 1",
+		args:    args{s: `SELECT fields(acc.all) FROM Contact con, con.Account acc`},
+		want:    nil,
+		wantErr: false,
+	}, {
+		name:     "fieldset 2",
+		args:     args{s: `SELECT fields(con.acc.all) FROM Contact con, con.Account acc`},
+		want:     nil,
+		wantErr:  true,
+		dbgBreak: true,
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
