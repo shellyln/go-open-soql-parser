@@ -43,7 +43,7 @@ func (ctx *normalizeQueryContext) addUnselectedSelectFields(
 }
 
 func (ctx *normalizeQueryContext) addUnselectedConditionalFields(
-	q *SoqlQuery, conditions []SoqlCondition, fieldMap map[string][]string) {
+	q *SoqlQuery, conditions []SoqlCondition, fieldMap map[string][]string) error {
 
 	conditionsLen := len(conditions)
 
@@ -56,7 +56,7 @@ func (ctx *normalizeQueryContext) addUnselectedConditionalFields(
 				switch conditions[i].Value.Type {
 				case SoqlFieldInfo_Field:
 					if _, ok := fieldMap[key]; !ok {
-						// TODO: check it is co-related (field in the ancestor object)
+						// TODO: check it is co-related (field in the ancestor object); siblings are error
 						f := conditions[i].Value
 						fieldMap[key] = f.Name
 						f.NotSelected = true
@@ -68,15 +68,23 @@ func (ctx *normalizeQueryContext) addUnselectedConditionalFields(
 			}
 		}
 	}
+	return nil
 }
 
-func (ctx *normalizeQueryContext) addUnselectedFields(q *SoqlQuery) {
+func (ctx *normalizeQueryContext) addUnselectedFields(q *SoqlQuery) error {
 	fieldMap := make(map[string][]string)
 
 	ctx.addUnselectedSelectFields(q, q.Fields, fieldMap, 0)
-	ctx.addUnselectedConditionalFields(q, q.Where, fieldMap)
+
+	if err := ctx.addUnselectedConditionalFields(q, q.Where, fieldMap); err != nil {
+		return err
+	}
+
 	ctx.addUnselectedSelectFields(q, q.GroupBy, fieldMap, 1)
-	ctx.addUnselectedConditionalFields(q, q.Having, fieldMap)
+
+	if err := ctx.addUnselectedConditionalFields(q, q.Having, fieldMap); err != nil {
+		return err
+	}
 
 	for i := 0; i < len(q.OrderBy); i++ {
 		key := nameutil.MakeDottedKeyIgnoreCase(q.OrderBy[i].Field.Name, len(q.OrderBy[i].Field.Name))
@@ -87,6 +95,7 @@ func (ctx *normalizeQueryContext) addUnselectedFields(q *SoqlQuery) {
 			q.Fields = append(q.Fields, f)
 		}
 	}
+	return nil
 }
 
 func distributeNotOperators(conditions []SoqlCondition) []SoqlCondition {

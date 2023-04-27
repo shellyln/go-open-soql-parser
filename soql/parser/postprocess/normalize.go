@@ -12,6 +12,7 @@ import (
 type normalizeQueryContext struct {
 	columnId    int
 	columnIdMap map[string]int
+	colIndexMap map[string]int
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
@@ -151,7 +152,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		for i := 0; i < len(q.Where); i++ {
 			condition := q.Where[i]
-			if condition.Opcode == SoqlConditionOpcode_FieldInfo {
+			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type != SoqlFieldInfo_SubQuery {
 				if err := ctx.normalizeFieldName(
 					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
 					objNameMap, nil, normalizeFieldNameConf{
@@ -164,8 +165,8 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 					return err
 				}
+				q.Where[i] = condition
 			}
-			q.Where[i] = condition
 		}
 	}
 
@@ -178,7 +179,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		for i := 0; i < len(q.Having); i++ {
 			condition := q.Having[i]
-			if condition.Opcode == SoqlConditionOpcode_FieldInfo {
+			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type != SoqlFieldInfo_SubQuery {
 				if err := ctx.normalizeFieldName(
 					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
 					objNameMap, groupingFields, normalizeFieldNameConf{
@@ -191,8 +192,8 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 					return err
 				}
+				q.Having[i] = condition
 			}
-			q.Having[i] = condition
 		}
 	}
 
@@ -234,7 +235,9 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		return len(q.From[i+1].Name) < len(q.From[j+1].Name)
 	})
 
-	ctx.addUnselectedFields(q)
+	if err := ctx.addUnselectedFields(q); err != nil {
+		return err
+	}
 
 	// TODO: * check object graph when aggregation(group by)
 	//           * subquery on select clause is not allowed.
@@ -293,6 +296,56 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 	}
 
+	savedColumnIdMap := ctx.columnIdMap
+	savedColIndexMap := ctx.colIndexMap
+	ctx.columnIdMap = make(map[string]int)
+	ctx.colIndexMap = make(map[string]int)
+
+	if q.Where != nil {
+		for i := 0; i < len(q.Where); i++ {
+			condition := q.Where[i]
+			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type == SoqlFieldInfo_SubQuery {
+				if err := ctx.normalizeFieldName(
+					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
+					objNameMap, nil, normalizeFieldNameConf{
+						isSelectClause:          false,
+						isWhereClause:           true,
+						isHavingClause:          false,
+						isFunctionParameter:     false,
+						allowUnregisteredObject: true,
+					}); err != nil {
+
+					return err
+				}
+				q.Where[i] = condition
+			}
+		}
+	}
+
+	if q.Having != nil {
+		for i := 0; i < len(q.Having); i++ {
+			condition := q.Having[i]
+			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type == SoqlFieldInfo_SubQuery {
+				if err := ctx.normalizeFieldName(
+					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
+					objNameMap, groupingFields, normalizeFieldNameConf{
+						isSelectClause:          false,
+						isWhereClause:           false,
+						isHavingClause:          true,
+						isFunctionParameter:     false,
+						allowUnregisteredObject: true,
+					}); err != nil {
+
+					return err
+				}
+				q.Having[i] = condition
+			}
+		}
+	}
+
+	ctx.columnIdMap = savedColumnIdMap
+	ctx.colIndexMap = savedColIndexMap
+
 	return nil
 }
 
@@ -300,6 +353,7 @@ func Normalize(q *SoqlQuery) error {
 	ctx := normalizeQueryContext{
 		columnId:    1,
 		columnIdMap: make(map[string]int),
+		colIndexMap: map[string]int{},
 	}
 	return ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil)
 }

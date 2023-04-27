@@ -250,6 +250,7 @@ type SoqlQuery struct {
 	For              SoqlForClause            `json:"for,omitempty"`            // For clause
 	Parent           *SoqlQuery               `json:"-"`                        // Pointer to parent query; Not used for "PerObjectQuery"
 	IsAggregation    bool                     `json:"isAggregation,omitempty"`  // It is an aggregation result or not; Not used for "PerObjectQuery"
+	IsCorelated      bool                     `json:"isCorelated,omitempty"`    // TODO:
 	PostProcessWhere []SoqlCondition          `json:"-"`                        // Post-processing conditions (Conditions to apply after being filtered in the query for each object)
 
 	// ParameterizedValues map[string]struct{} `json:"-"` // TODO:

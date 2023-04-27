@@ -14,10 +14,11 @@ func TestParse(t *testing.T) {
 		s string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    interface{}
-		wantErr bool
+		name     string
+		args     args
+		want     interface{}
+		wantErr  bool
+		dbgBreak bool
 	}{{
 		name:    "1",
 		args:    args{s: `SELECT CONCAT(1,2,3,4) FROM Contact`},
@@ -60,23 +61,28 @@ func TestParse(t *testing.T) {
 		want:    nil,
 		wantErr: false,
 	}, {
-		name:    "co-related subquery 1",
-		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`},
-		want:    nil,
-		wantErr: false,
+		name:     "co-related subquery 1",
+		args:     args{s: `SELECT (SELECT Id FROM con.Departments where contact=contact.id) qwerty FROM Contact con`},
+		want:     nil,
+		wantErr:  false,
+		dbgBreak: true,
 	}, {
 		name:    "co-related subquery 2",
 		args:    args{s: `SELECT (SELECT Id FROM con.Departments where contact=con.id) qwerty FROM Contact con`},
 		want:    nil,
 		wantErr: false,
 	}, {
-		name:    "co-related subquery 3",
+		name:    "co-related subquery 3 (non co-related)",
 		args:    args{s: `SELECT (SELECT Id, con.Id FROM con.Departments) qwerty FROM Contact con`},
 		want:    nil,
 		wantErr: true,
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.dbgBreak {
+				t.Log("debug")
+			}
+
 			got, err := parser.Parse(tt.args.s)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
@@ -138,10 +144,11 @@ func TestParse2(t *testing.T) {
 		s string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    interface{}
-		wantErr bool
+		name     string
+		args     args
+		want     interface{}
+		wantErr  bool
+		dbgBreak bool
 	}{{
 		name: "1",
 		args: args{s: `
@@ -166,7 +173,7 @@ func TestParse2(t *testing.T) {
 				and
 				acc.Id in ('a', 'b', 'c', null)
 				and
-				r3.Name in (select x from Foobar)
+				r3.Name in (select x,Id,Name from Contact)
 				and
 				Name > 0001-01-02
 				and
@@ -203,6 +210,10 @@ func TestParse2(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.dbgBreak {
+				t.Log("debug")
+			}
+
 			got, err := parser.Parse(tt.args.s)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)

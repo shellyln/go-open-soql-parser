@@ -322,8 +322,6 @@ func compactConditions(conditions []SoqlCondition) []SoqlCondition {
 }
 
 func (ctx *normalizeQueryContext) buildPerObjectInfo(q *SoqlQuery) error {
-	colIndexMap := make(map[string]int) // TODO: -> ctx
-
 	for i := 0; i < len(q.From); i++ {
 		perObjQuery := &SoqlQuery{
 			From: []SoqlObjectInfo{q.From[i]},
@@ -334,11 +332,11 @@ func (ctx *normalizeQueryContext) buildPerObjectInfo(q *SoqlQuery) error {
 
 		for j := range perObjQuery.Fields {
 			perObjQuery.Fields[j].ColIndex = j
-			colIndexMap[perObjQuery.Fields[j].Key] = j
+			ctx.colIndexMap[perObjQuery.Fields[j].Key] = j
 		}
 	}
 
-	ctx.applyColIndex(q, colIndexMap)
+	ctx.applyColIndex(q)
 
 	for i := 0; i < len(q.From); i++ {
 		perObjQuery := q.From[i].PerObjectQuery
