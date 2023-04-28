@@ -1,5 +1,9 @@
 # Changelog
 
+# v0.0.4
+* Add meta information to query object.
+* [FIX] Fix fieldset parameter resolution.
+
 # v0.0.3
 * Register unregistered fields in the correlated subquery.
 * Set ViewId to objects and fields.
