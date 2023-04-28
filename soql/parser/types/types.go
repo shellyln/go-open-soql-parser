@@ -90,7 +90,7 @@ type SoqlFieldInfo struct {
 	ColumnId    int               `json:"columnId,omitempty"`    // (internal use) for all; 1-based; If 0, it is not set.; Unique column Id across all main and sub queries
 	ColIndex    int               `json:"colIndex"`              // Column index in the object
 	ViewId      int               `json:"viewId,omitempty"`      // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
-	Key         string            `json:"-"`                     // (internal use) Base64-encoded, dot-delimited Name field value
+	Key         string            `json:"key,omitempty"`         // (internal use) Base64-encoded, dot-delimited Name field value
 }
 
 type soqlFieldInfo_unmarshal struct {
@@ -106,6 +106,7 @@ type soqlFieldInfo_unmarshal struct {
 	ColumnId    int               `json:"columnId,omitempty"`
 	ColIndex    int               `json:"colIndex"`
 	ViewId      int               `json:"viewId,omitempty"`
+	Key         string            `json:"key,omitempty"`
 }
 
 type SoqlListItem struct {
@@ -133,9 +134,9 @@ type SoqlObjectInfo struct {
 	HasConditions  bool            `json:"hasConditions,omitempty"` // Query has conditions originally. If false and this object is on the right side, prevent performing an inner join.
 	InnerJoin      bool            `json:"innerJoin,omitempty"`     // When this object is on the left side, an inner join is performed.
 	Hints          []SoqlQueryHint `json:"hints,omitempty"`         // TODO: hints
-	PerObjectQuery *SoqlQuery      `json:"-"`                       // A query that extracts only the filter and sort conditions and fields related to this object. A simple query, not including function calls, etc.
+	PerObjectQuery *SoqlQuery      `json:"perObjectQuery"`          // A query that extracts only the filter and sort conditions and fields related to this object. A simple query, not including function calls, etc.
 	ViewId         int             `json:"viewId,omitempty"`        // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
-	Key            string          `json:"-"`                       // (internal use) Base64-encoded, dot-delimited Name field value
+	Key            string          `json:"key,omitempty"`           // (internal use) Base64-encoded, dot-delimited Name field value
 }
 
 type SoqlConditionOpcode int
@@ -240,19 +241,28 @@ type SoqlForClause struct {
 	UpdateViewstat bool `json:"updateViewstat,omitempty"` // for update viewstat (set with Update)
 }
 
+type SoqlQueryMeta struct {
+	Version      string    `json:"version,omitempty"`
+	Date         time.Time `json:"date,omitempty"`
+	Source       string    `json:"source,omitempty"`
+	NextColumnId int       `json:"nextColumnId,omitempty"`
+	NextViewId   int       `json:"nextViewId,omitempty"`
+}
+
 type SoqlQuery struct {
-	Fields           []SoqlFieldInfo          `json:"fields,omitempty"`         // Select clause fields; possibly null
-	From             []SoqlObjectInfo         `json:"from,omitempty"`           // From clause objects; has at least one element
-	Where            []SoqlCondition          `json:"where,omitempty"`          // Where clause conditions; possibly null; Not used in the execution planning phase.
-	GroupBy          []SoqlFieldInfo          `json:"groupBy,omitempty"`        // Group by clause fields; possibly null; Not used for "PerObjectQuery"
-	Having           []SoqlCondition          `json:"having,omitempty"`         // Having clause conditions; possibly null; Not used for "PerObjectQuery"
-	OrderBy          []SoqlOrderByInfo        `json:"orderBy,omitempty"`        // Order by clause fields; possibly null
-	OffsetAndLimit   SoqlOffsetAndLimitClause `json:"offsetAndLimit,omitempty"` // Offset and limit clause
-	For              SoqlForClause            `json:"for,omitempty"`            // For clause
-	Parent           *SoqlQuery               `json:"-"`                        // Pointer to parent query; Not used for "PerObjectQuery"
-	IsAggregation    bool                     `json:"isAggregation,omitempty"`  // It is an aggregation result or not; Not used for "PerObjectQuery"
-	IsCorelated      bool                     `json:"isCorelated,omitempty"`    // TODO:
-	PostProcessWhere []SoqlCondition          `json:"-"`                        // Post-processing conditions (Conditions to apply after being filtered in the query for each object)
+	Fields           []SoqlFieldInfo          `json:"fields,omitempty"`           // Select clause fields; possibly null
+	From             []SoqlObjectInfo         `json:"from,omitempty"`             // From clause objects; has at least one element
+	Where            []SoqlCondition          `json:"where,omitempty"`            // Where clause conditions; possibly null; Not used in the execution planning phase.
+	GroupBy          []SoqlFieldInfo          `json:"groupBy,omitempty"`          // Group by clause fields; possibly null; Not used for "PerObjectQuery"
+	Having           []SoqlCondition          `json:"having,omitempty"`           // Having clause conditions; possibly null; Not used for "PerObjectQuery"
+	OrderBy          []SoqlOrderByInfo        `json:"orderBy,omitempty"`          // Order by clause fields; possibly null
+	OffsetAndLimit   SoqlOffsetAndLimitClause `json:"offsetAndLimit,omitempty"`   // Offset and limit clause
+	For              SoqlForClause            `json:"for,omitempty"`              // For clause
+	Parent           *SoqlQuery               `json:"-"`                          // Pointer to parent query; Not used for "PerObjectQuery"
+	IsAggregation    bool                     `json:"isAggregation,omitempty"`    // It is an aggregation result or not; Not used for "PerObjectQuery"
+	IsCorelated      bool                     `json:"isCorelated,omitempty"`      // TODO:
+	PostProcessWhere []SoqlCondition          `json:"postProcessWhere,omitempty"` // Post-processing conditions (Conditions to apply after being filtered in the query for each object)
+	Meta             *SoqlQueryMeta           `json:"meta,omitempty"`
 
 	// ParameterizedValues map[string]struct{} `json:"-"` // TODO:
 	// DateTimeLiterals    map[string]struct{} `json:"-"` // TODO:

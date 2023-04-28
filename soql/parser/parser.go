@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/shellyln/go-open-soql-parser/soql/parser/core"
 	"github.com/shellyln/go-open-soql-parser/soql/parser/postprocess"
@@ -40,6 +41,12 @@ func Parse(s string) (*types.SoqlQuery, error) {
 	}
 
 	q := out.AstStack[0].Value.(types.SoqlQuery)
+
+	q.Meta = &types.SoqlQueryMeta{
+		Version: "0.9",
+		Date:    time.Now().UTC(),
+		Source:  s,
+	}
 
 	if err := postprocess.Normalize(&q); err != nil {
 		return nil, err

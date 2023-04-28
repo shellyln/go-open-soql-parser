@@ -372,5 +372,13 @@ func Normalize(q *SoqlQuery) error {
 		columnIdMap: make(map[string]int),
 		colIndexMap: map[string]int{},
 	}
-	return ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil)
+
+	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil); err != nil {
+		return err
+	}
+
+	q.Meta.NextColumnId = ctx.columnId
+	q.Meta.NextViewId = ctx.viewId
+
+	return nil
 }
