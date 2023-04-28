@@ -81,10 +81,15 @@ func TestParse(t *testing.T) {
 		want:    nil,
 		wantErr: false,
 	}, {
-		name:     "fieldset 2",
-		args:     args{s: `SELECT fields(con.acc.all) FROM Contact con, con.Account acc`},
+		name:    "fieldset 2",
+		args:    args{s: `SELECT fields(con.acc.all) FROM Contact con, con.Account acc`},
+		want:    nil,
+		wantErr: true,
+	}, {
+		name:     "cond subquery",
+		args:     args{s: `SELECT Id FROM Contact WHERE Name in (select asd.x from qwe)`},
 		want:     nil,
-		wantErr:  true,
+		wantErr:  false,
 		dbgBreak: true,
 	}}
 	for _, tt := range tests {
@@ -172,6 +177,7 @@ func TestParse2(t *testing.T) {
 			  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
 			  , FLAT(acc.Name)
 			  , (SELECT Id FROM con.Departments where uuu=con.Zzz and vvv=con.Id) qwerty
+			  , (select Id from r3.lkjh)
 			FROM
 			    Contact con
 			  , con.Account acc

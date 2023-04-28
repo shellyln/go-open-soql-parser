@@ -87,9 +87,9 @@ type SoqlFieldInfo struct {
 	NotSelected bool              `json:"notSelected,omitempty"` // It appears only in parameters and conditional expressions.
 	Aggregated  bool              `json:"aggregated,omitempty"`  // It is an aggregation function result field or not
 	Hints       []SoqlQueryHint   `json:"hints,omitempty"`       // TODO: hints
-	ColumnId    int               `json:"columnId,omitempty"`    // (internal use) for all; 1-based; If 0, it is not set.; Unique column Id across all main and sub queries
+	ColumnId    int               `json:"columnId,omitempty"`    // Column unique id; 1-based; If 0, it is not set.; Unique column Id across all main and sub queries
 	ColIndex    int               `json:"colIndex"`              // Column index in the object
-	ViewId      int               `json:"viewId,omitempty"`      // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
+	ViewId      int               `json:"viewId,omitempty"`      // View (table/object) unique id; 1-based; If 0, it is not set.
 	Key         string            `json:"key,omitempty"`         // (internal use) Base64-encoded, dot-delimited Name field value
 }
 
@@ -135,7 +135,8 @@ type SoqlObjectInfo struct {
 	InnerJoin      bool            `json:"innerJoin,omitempty"`     // When this object is on the left side, an inner join is performed.
 	Hints          []SoqlQueryHint `json:"hints,omitempty"`         // TODO: hints
 	PerObjectQuery *SoqlQuery      `json:"perObjectQuery"`          // A query that extracts only the filter and sort conditions and fields related to this object. A simple query, not including function calls, etc.
-	ViewId         int             `json:"viewId,omitempty"`        // TODO: (internal use) for SubQuery and Function; 1-based; If 0, it is not set.
+	ViewId         int             `json:"viewId,omitempty"`        // View (table/object) unique id; 1-based; If 0, it is not set.
+	ParentViewId   int             `json:"parentViewId,omitempty"`  // TODO:
 	Key            string          `json:"key,omitempty"`           // (internal use) Base64-encoded, dot-delimited Name field value
 }
 
@@ -245,6 +246,7 @@ type SoqlQueryMeta struct {
 	Version      string    `json:"version,omitempty"`
 	Date         time.Time `json:"date,omitempty"`
 	Source       string    `json:"source,omitempty"`
+	MaxDepth     int       `json:"maxDepth,omitempty"` // TODO:
 	NextColumnId int       `json:"nextColumnId,omitempty"`
 	NextViewId   int       `json:"nextViewId,omitempty"`
 }

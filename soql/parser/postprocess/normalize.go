@@ -10,11 +10,13 @@ import (
 )
 
 type normalizeQueryContext struct {
-	viewId      int
-	viewIdMap   map[string]int
-	columnId    int
-	columnIdMap map[string]int
-	colIndexMap map[string]int
+	viewId             int
+	viewIdMap          map[string]int
+	columnId           int
+	columnIdMap        map[string]int
+	colIndexMap        map[string]int
+	headObjDepthOffset int
+	maxDepth           int
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
@@ -249,6 +251,11 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		} else {
 			q.From[i].ViewId = viewId
 		}
+
+		objDepth := len(q.From[i].Name) + ctx.headObjDepthOffset
+		if ctx.maxDepth < objDepth {
+			ctx.maxDepth = objDepth
+		}
 	}
 
 	// TODO: * check object graph when aggregation(group by)
@@ -311,9 +318,11 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 	savedViewIdMap := ctx.viewIdMap
 	savedColumnIdMap := ctx.columnIdMap
 	savedColIndexMap := ctx.colIndexMap
+	savedHeadObjDepthOffset := ctx.headObjDepthOffset
 	ctx.viewIdMap = make(map[string]int)
 	ctx.columnIdMap = make(map[string]int)
 	ctx.colIndexMap = make(map[string]int)
+	ctx.headObjDepthOffset = len(q.From[0].Name)
 
 	if q.Where != nil {
 		for i := 0; i < len(q.Where); i++ {
@@ -360,17 +369,20 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 	ctx.viewIdMap = savedViewIdMap
 	ctx.columnIdMap = savedColumnIdMap
 	ctx.colIndexMap = savedColIndexMap
+	ctx.headObjDepthOffset = savedHeadObjDepthOffset
 
 	return nil
 }
 
 func Normalize(q *SoqlQuery) error {
 	ctx := normalizeQueryContext{
-		viewId:      1,
-		viewIdMap:   make(map[string]int),
-		columnId:    1,
-		columnIdMap: make(map[string]int),
-		colIndexMap: map[string]int{},
+		viewId:             1,
+		viewIdMap:          make(map[string]int),
+		columnId:           1,
+		columnIdMap:        make(map[string]int),
+		colIndexMap:        map[string]int{},
+		headObjDepthOffset: 0,
+		maxDepth:           0,
 	}
 
 	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil); err != nil {
@@ -379,6 +391,7 @@ func Normalize(q *SoqlQuery) error {
 
 	q.Meta.NextColumnId = ctx.columnId
 	q.Meta.NextViewId = ctx.viewId
+	q.Meta.MaxDepth = ctx.maxDepth
 
 	return nil
 }
