@@ -10,6 +10,7 @@ import (
 )
 
 type normalizeQueryContext struct {
+	queryId            int
 	viewId             int
 	viewIdMap          map[string]int
 	columnId           int
@@ -22,6 +23,9 @@ type normalizeQueryContext struct {
 
 func (ctx *normalizeQueryContext) normalizeQuery(
 	qPlace soqlQueryPlace, q *SoqlQuery, objNameMap map[string][]string) error {
+
+	q.QueryId = ctx.queryId
+	ctx.queryId++
 
 	var primaryObjectName []string // TODO: name is not good? it is primary or parent object
 
@@ -268,7 +272,10 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		ctx.viewGraph[q.From[i].ViewId] = SoqlGraphLeaf{
 			ParentViewId: q.From[i].ParentViewId,
+			Depth:        objDepth,
+			QueryDepth:   ctx.headObjDepthOffset + 1,
 			Object:       &q.From[i],
+			Query:        q,
 		}
 	}
 
@@ -390,6 +397,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 func Normalize(q *SoqlQuery) error {
 	ctx := normalizeQueryContext{
+		queryId:            1,
 		viewId:             1,
 		viewIdMap:          make(map[string]int),
 		columnId:           1,
@@ -406,6 +414,7 @@ func Normalize(q *SoqlQuery) error {
 
 	q.Meta.NextColumnId = ctx.columnId
 	q.Meta.NextViewId = ctx.viewId
+	q.Meta.NextQueryId = ctx.queryId
 	q.Meta.MaxDepth = ctx.maxDepth
 	q.Meta.ViewGraph = ctx.viewGraph
 
