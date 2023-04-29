@@ -18,14 +18,25 @@ type normalizeQueryContext struct {
 	colIndexMap        map[string]int
 	headObjDepthOffset int
 	maxDepth           int
-	viewGraph          map[int]SoqlGraphLeaf
+	viewGraph          map[int]SoqlViewGraphLeaf
+	queryGraph         map[int]SoqlQueryGraphLeaf
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
-	qPlace soqlQueryPlace, q *SoqlQuery, objNameMap map[string][]string) error {
+	qPlace soqlQueryPlace, q, callParentQuery *SoqlQuery, objNameMap map[string][]string) error {
 
 	q.QueryId = ctx.queryId
 	ctx.queryId++
+
+	var parentQueryId int
+	if callParentQuery != nil {
+		parentQueryId = callParentQuery.QueryId
+	}
+	ctx.queryGraph[q.QueryId] = SoqlQueryGraphLeaf{
+		ParentQueryId: parentQueryId,
+		IsConditional: qPlace == soqlQueryPlace_ConditionalOperand,
+		Query:         q,
+	}
 
 	var primaryObjectName []string // TODO: name is not good? it is primary or parent object
 
@@ -270,7 +281,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			}
 		}
 
-		ctx.viewGraph[q.From[i].ViewId] = SoqlGraphLeaf{
+		ctx.viewGraph[q.From[i].ViewId] = SoqlViewGraphLeaf{
 			ParentViewId: q.From[i].ParentViewId,
 			QueryId:      q.QueryId,
 			Depth:        objDepth,
@@ -406,10 +417,11 @@ func Normalize(q *SoqlQuery) error {
 		colIndexMap:        map[string]int{},
 		headObjDepthOffset: 0,
 		maxDepth:           0,
-		viewGraph:          make(map[int]SoqlGraphLeaf),
+		viewGraph:          make(map[int]SoqlViewGraphLeaf),
+		queryGraph:         make(map[int]SoqlQueryGraphLeaf),
 	}
 
-	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil); err != nil {
+	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil, nil); err != nil {
 		return err
 	}
 
@@ -418,6 +430,7 @@ func Normalize(q *SoqlQuery) error {
 	q.Meta.NextQueryId = ctx.queryId
 	q.Meta.MaxDepth = ctx.maxDepth
 	q.Meta.ViewGraph = ctx.viewGraph
+	q.Meta.QueryGraph = ctx.queryGraph
 
 	return nil
 }

@@ -309,7 +309,7 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 		if conf.isSelectClause {
 			field.SubQuery.Parent = q
 		}
-		if err := ctx.normalizeQuery(qPlace, field.SubQuery, objNameMap); err != nil {
+		if err := ctx.normalizeQuery(qPlace, field.SubQuery, q, objNameMap); err != nil {
 			return err
 		}
 	case SoqlFieldInfo_FieldSet:
