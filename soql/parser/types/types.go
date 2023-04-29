@@ -124,11 +124,8 @@ type SoqlTimeRange struct {
 	End   time.Time
 }
 
-// TODO: type SoqlObjectType int // (MainQueryPrimary, SubQueryPrimary, ParentRelationship, ConditionalOperand)
-
 // Object (table)
 type SoqlObjectInfo struct {
-	//Type           SoqlQueryType `json:"type,omitempty"` // TODO:
 	Name           []string        `json:"name,omitempty"`          // Object (table) or relationship name with namespace (object graph path)
 	AliasName      string          `json:"aliasName,omitempty"`     // Alias name
 	HasConditions  bool            `json:"hasConditions,omitempty"` // Query has conditions originally. If false and this object is on the right side, prevent performing an inner join.
@@ -136,7 +133,7 @@ type SoqlObjectInfo struct {
 	Hints          []SoqlQueryHint `json:"hints,omitempty"`         // TODO: hints
 	PerObjectQuery *SoqlQuery      `json:"perObjectQuery"`          // A query that extracts only the filter and sort conditions and fields related to this object. A simple query, not including function calls, etc.
 	ViewId         int             `json:"viewId,omitempty"`        // View (table/object) unique id; 1-based; If 0, it is not set.
-	ParentViewId   int             `json:"parentViewId,omitempty"`  // TODO:
+	ParentViewId   int             `json:"parentViewId,omitempty"`  // View id of parent (left side on joining) relationship object.
 	Key            string          `json:"key,omitempty"`           // (internal use) Base64-encoded, dot-delimited Name field value
 }
 
@@ -228,10 +225,10 @@ type SoqlOrderByInfo struct {
 }
 
 type SoqlOffsetAndLimitClause struct {
-	Offset          int64  `json:"offset,omitempty"` // offset
-	Limit           int64  `json:"limit,omitempty"`  // limit; 0 represents not limited.
-	OffsetParamName string `json:"offsetParamName,omitempty"`
-	LimitParamName  string `json:"limitParamName,omitempty"`
+	Offset          int64  `json:"offset,omitempty"`          // offset
+	Limit           int64  `json:"limit,omitempty"`           // limit; 0 represents not limited.
+	OffsetParamName string `json:"offsetParamName,omitempty"` // offset for parameterized query; If set, it has precedence over the value
+	LimitParamName  string `json:"limitParamName,omitempty"`  // limit for parameterized query; If set, it has precedence over the value
 }
 
 type SoqlForClause struct {
@@ -243,12 +240,12 @@ type SoqlForClause struct {
 }
 
 type SoqlQueryMeta struct {
-	Version      string    `json:"version,omitempty"`
-	Date         time.Time `json:"date,omitempty"`
-	Source       string    `json:"source,omitempty"`
-	MaxDepth     int       `json:"maxDepth,omitempty"` // TODO:
-	NextColumnId int       `json:"nextColumnId,omitempty"`
-	NextViewId   int       `json:"nextViewId,omitempty"`
+	Version      string    `json:"version,omitempty"`      // format version
+	Date         time.Time `json:"date,omitempty"`         // compiled datetime
+	Source       string    `json:"source,omitempty"`       // source
+	MaxDepth     int       `json:"maxDepth,omitempty"`     // max depth of object graph
+	NextColumnId int       `json:"nextColumnId,omitempty"` // next column id (a number of columns)
+	NextViewId   int       `json:"nextViewId,omitempty"`   // next view id (a number of objects)
 }
 
 type SoqlQuery struct {
@@ -262,7 +259,7 @@ type SoqlQuery struct {
 	For              SoqlForClause            `json:"for,omitempty"`              // For clause
 	Parent           *SoqlQuery               `json:"-"`                          // Pointer to parent query; Not used for "PerObjectQuery"
 	IsAggregation    bool                     `json:"isAggregation,omitempty"`    // It is an aggregation result or not; Not used for "PerObjectQuery"
-	IsCorelated      bool                     `json:"isCorelated,omitempty"`      // TODO:
+	IsCorelated      bool                     `json:"isCorelated,omitempty"`      // Co-related query if true
 	PostProcessWhere []SoqlCondition          `json:"postProcessWhere,omitempty"` // Post-processing conditions (Conditions to apply after being filtered in the query for each object)
 	Meta             *SoqlQueryMeta           `json:"meta,omitempty"`
 
