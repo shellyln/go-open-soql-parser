@@ -17,6 +17,7 @@ type normalizeQueryContext struct {
 	colIndexMap        map[string]int
 	headObjDepthOffset int
 	maxDepth           int
+	viewGraph          map[int]SoqlGraphLeaf
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
@@ -257,11 +258,17 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		if ctx.maxDepth < objDepth {
 			ctx.maxDepth = objDepth
 		}
+
 		if nameLen > 1 {
 			parentKey := nameutil.MakeDottedKeyIgnoreCase(q.From[i].Name, nameLen-1)
 			if parentViewId, ok := ctx.viewIdMap[parentKey]; ok {
 				q.From[i].ParentViewId = parentViewId
 			}
+		}
+
+		ctx.viewGraph[q.From[i].ViewId] = SoqlGraphLeaf{
+			ParentViewId: q.From[i].ParentViewId,
+			Object:       &q.From[i],
 		}
 	}
 
@@ -390,6 +397,7 @@ func Normalize(q *SoqlQuery) error {
 		colIndexMap:        map[string]int{},
 		headObjDepthOffset: 0,
 		maxDepth:           0,
+		viewGraph:          make(map[int]SoqlGraphLeaf),
 	}
 
 	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil); err != nil {
@@ -399,6 +407,7 @@ func Normalize(q *SoqlQuery) error {
 	q.Meta.NextColumnId = ctx.columnId
 	q.Meta.NextViewId = ctx.viewId
 	q.Meta.MaxDepth = ctx.maxDepth
+	q.Meta.ViewGraph = ctx.viewGraph
 
 	return nil
 }

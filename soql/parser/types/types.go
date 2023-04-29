@@ -239,13 +239,19 @@ type SoqlForClause struct {
 	UpdateViewstat bool `json:"updateViewstat,omitempty"` // for update viewstat (set with Update)
 }
 
+type SoqlGraphLeaf struct {
+	ParentViewId int             `json:"parentViewId"`
+	Object       *SoqlObjectInfo `json:"-"`
+}
+
 type SoqlQueryMeta struct {
-	Version      string    `json:"version,omitempty"`      // format version
-	Date         time.Time `json:"date,omitempty"`         // compiled datetime
-	Source       string    `json:"source,omitempty"`       // source
-	MaxDepth     int       `json:"maxDepth,omitempty"`     // max depth of object graph
-	NextColumnId int       `json:"nextColumnId,omitempty"` // next column id (a number of columns)
-	NextViewId   int       `json:"nextViewId,omitempty"`   // next view id (a number of objects)
+	Version      string                `json:"version,omitempty"`      // format version
+	Date         time.Time             `json:"date,omitempty"`         // compiled datetime
+	Source       string                `json:"source,omitempty"`       // source
+	MaxDepth     int                   `json:"maxDepth,omitempty"`     // max depth of object graph
+	NextColumnId int                   `json:"nextColumnId,omitempty"` // next column id (a number of columns)
+	NextViewId   int                   `json:"nextViewId,omitempty"`   // next view id (a number of objects)
+	ViewGraph    map[int]SoqlGraphLeaf `json:"viewGraph,omitempty"`    //
 }
 
 type SoqlQuery struct {
