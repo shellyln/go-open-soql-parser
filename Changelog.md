@@ -1,5 +1,12 @@
 # Changelog
 
+# v0.0.5
+* Add Depth, QueryDepth, Query to QueryGraph.
+* Add view graph to query meta info.
+* Add object max depth to query meta info.
+* Set parent view id to object,
+* Set query id to query.
+
 # v0.0.4
 * Add meta information to query object.
 * [FIX] Fix fieldset parameter resolution.
