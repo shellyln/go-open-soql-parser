@@ -252,9 +252,16 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			q.From[i].ViewId = viewId
 		}
 
-		objDepth := len(q.From[i].Name) + ctx.headObjDepthOffset
+		nameLen := len(q.From[i].Name)
+		objDepth := nameLen + ctx.headObjDepthOffset
 		if ctx.maxDepth < objDepth {
 			ctx.maxDepth = objDepth
+		}
+		if nameLen > 1 {
+			parentKey := nameutil.MakeDottedKeyIgnoreCase(q.From[i].Name, nameLen-1)
+			if parentViewId, ok := ctx.viewIdMap[parentKey]; ok {
+				q.From[i].ParentViewId = parentViewId
+			}
 		}
 	}
 
