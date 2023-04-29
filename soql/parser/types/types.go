@@ -240,11 +240,12 @@ type SoqlForClause struct {
 }
 
 type SoqlGraphLeaf struct {
-	ParentViewId int             `json:"parentViewId"`
-	Depth        int             `json:"depth"`
-	QueryDepth   int             `json:"queryDepth"`
-	Object       *SoqlObjectInfo `json:"-"`
-	Query        *SoqlQuery      `json:"-"`
+	ParentViewId int             `json:"parentViewId"` // View id of parent object on object graph
+	QueryId      int             `json:"queryId"`      // Query unique id
+	Depth        int             `json:"depth"`        // Depth on object graph
+	QueryDepth   int             `json:"queryDepth"`   // Query depth
+	Object       *SoqlObjectInfo `json:"-"`            // Object
+	Query        *SoqlQuery      `json:"-"`            // Query
 }
 
 type SoqlQueryMeta struct {
@@ -255,7 +256,7 @@ type SoqlQueryMeta struct {
 	NextColumnId int                   `json:"nextColumnId,omitempty"` // next column id (a number of columns)
 	NextViewId   int                   `json:"nextViewId,omitempty"`   // next view id (a number of views)
 	NextQueryId  int                   `json:"nextQueryId,omitempty"`  // next query id (a number of queries)
-	ViewGraph    map[int]SoqlGraphLeaf `json:"viewGraph,omitempty"`    // object graph
+	ViewGraph    map[int]SoqlGraphLeaf `json:"viewGraph,omitempty"`    // object graph (child -> parent)
 }
 
 type SoqlQuery struct {
@@ -271,8 +272,8 @@ type SoqlQuery struct {
 	IsAggregation    bool                     `json:"isAggregation,omitempty"`    // It is an aggregation result or not; Not used for "PerObjectQuery"
 	IsCorelated      bool                     `json:"isCorelated,omitempty"`      // Co-related query if true
 	PostProcessWhere []SoqlCondition          `json:"postProcessWhere,omitempty"` // Post-processing conditions (Conditions to apply after being filtered in the query for each object)
-	QueryId          int                      `json:"queryId,omitempty"`          // query unique id
-	Meta             *SoqlQueryMeta           `json:"meta,omitempty"`             // meta information
+	QueryId          int                      `json:"queryId,omitempty"`          // Query unique id
+	Meta             *SoqlQueryMeta           `json:"meta,omitempty"`             // Meta information
 
 	// ParameterizedValues map[string]struct{} `json:"-"` // TODO:
 	// DateTimeLiterals    map[string]struct{} `json:"-"` // TODO:

@@ -272,6 +272,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		ctx.viewGraph[q.From[i].ViewId] = SoqlGraphLeaf{
 			ParentViewId: q.From[i].ParentViewId,
+			QueryId:      q.QueryId,
 			Depth:        objDepth,
 			QueryDepth:   ctx.headObjDepthOffset + 1,
 			Object:       &q.From[i],
