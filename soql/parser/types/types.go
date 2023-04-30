@@ -265,6 +265,7 @@ type SoqlQueryMeta struct {
 	NextQueryId  int                        `json:"nextQueryId,omitempty"`  // next query id (a number of queries)
 	ViewGraph    map[int]SoqlViewGraphLeaf  `json:"viewGraph,omitempty"`    // object graph (child -> parent)
 	QueryGraph   map[int]SoqlQueryGraphLeaf `json:"queryGraph,omitempty"`   // query graph (child -> parent)
+	// TODO: MaxQueryDepth, Parameters, DateTimeLiterals
 }
 
 type SoqlQuery struct {
@@ -282,11 +283,4 @@ type SoqlQuery struct {
 	PostProcessWhere []SoqlCondition          `json:"postProcessWhere,omitempty"` // Post-processing conditions (Conditions to apply after being filtered in the query for each object)
 	QueryId          int                      `json:"queryId,omitempty"`          // Query unique id
 	Meta             *SoqlQueryMeta           `json:"meta,omitempty"`             // Meta information
-
-	// ParameterizedValues map[string]struct{} `json:"-"` // TODO:
-	// DateTimeLiterals    map[string]struct{} `json:"-"` // TODO:
-	// TODO: pointer to additional infos (parameters and datetime literals, per object fields and conditions, ...)
-	// QueryType // TODO: add ParentRelationship
-	// ParametersRef
-	// SubQueriesRef
 }
