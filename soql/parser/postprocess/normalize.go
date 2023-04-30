@@ -12,14 +12,15 @@ import (
 type normalizeQueryContext struct {
 	queryId            int
 	viewId             int
-	viewIdMap          map[string]int
 	columnId           int
+	viewIdMap          map[string]int
 	columnIdMap        map[string]int
 	colIndexMap        map[string]int
 	headObjDepthOffset int
-	maxDepth           int
-	viewGraph          map[int]SoqlViewGraphLeaf
+	maxQueryDepth      int
+	maxViewDepth       int
 	queryGraph         map[int]SoqlQueryGraphLeaf
+	viewGraph          map[int]SoqlViewGraphLeaf
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
@@ -27,6 +28,10 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 	q.QueryId = ctx.queryId
 	ctx.queryId++
+
+	if queryDepth > ctx.maxQueryDepth {
+		ctx.maxQueryDepth = queryDepth
+	}
 
 	var parentQueryId int
 	if callParentQuery != nil {
@@ -271,8 +276,8 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		nameLen := len(q.From[i].Name)
 		objDepth := nameLen + ctx.headObjDepthOffset
-		if ctx.maxDepth < objDepth {
-			ctx.maxDepth = objDepth
+		if ctx.maxViewDepth < objDepth {
+			ctx.maxViewDepth = objDepth
 		}
 
 		if nameLen > 1 {
@@ -412,26 +417,28 @@ func Normalize(q *SoqlQuery) error {
 	ctx := normalizeQueryContext{
 		queryId:            1,
 		viewId:             1,
-		viewIdMap:          make(map[string]int),
 		columnId:           1,
+		viewIdMap:          make(map[string]int),
 		columnIdMap:        make(map[string]int),
 		colIndexMap:        map[string]int{},
 		headObjDepthOffset: 0,
-		maxDepth:           0,
-		viewGraph:          make(map[int]SoqlViewGraphLeaf),
+		maxQueryDepth:      0,
+		maxViewDepth:       0,
 		queryGraph:         make(map[int]SoqlQueryGraphLeaf),
+		viewGraph:          make(map[int]SoqlViewGraphLeaf),
 	}
 
 	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil, 1, nil); err != nil {
 		return err
 	}
 
-	q.Meta.NextColumnId = ctx.columnId
-	q.Meta.NextViewId = ctx.viewId
 	q.Meta.NextQueryId = ctx.queryId
-	q.Meta.MaxDepth = ctx.maxDepth
-	q.Meta.ViewGraph = ctx.viewGraph
+	q.Meta.NextViewId = ctx.viewId
+	q.Meta.NextColumnId = ctx.columnId
+	q.Meta.MaxQueryDepth = ctx.maxQueryDepth
+	q.Meta.MaxViewDepth = ctx.maxViewDepth
 	q.Meta.QueryGraph = ctx.queryGraph
+	q.Meta.ViewGraph = ctx.viewGraph
 
 	return nil
 }

@@ -256,15 +256,16 @@ type SoqlQueryGraphLeaf struct {
 }
 
 type SoqlQueryMeta struct {
-	Version      string                     `json:"version,omitempty"`      // format version
-	Date         time.Time                  `json:"date,omitempty"`         // compiled datetime
-	Source       string                     `json:"source,omitempty"`       // source
-	MaxDepth     int                        `json:"maxDepth,omitempty"`     // max depth of object graph
-	NextColumnId int                        `json:"nextColumnId,omitempty"` // next column id (a number of columns)
-	NextViewId   int                        `json:"nextViewId,omitempty"`   // next view id (a number of views)
-	NextQueryId  int                        `json:"nextQueryId,omitempty"`  // next query id (a number of queries)
-	ViewGraph    map[int]SoqlViewGraphLeaf  `json:"viewGraph,omitempty"`    // object graph (child -> parent)
-	QueryGraph   map[int]SoqlQueryGraphLeaf `json:"queryGraph,omitempty"`   // query graph (child -> parent)
+	Version       string                     `json:"version,omitempty"`       // format version
+	Date          time.Time                  `json:"date,omitempty"`          // compiled datetime
+	Source        string                     `json:"source,omitempty"`        // source
+	MaxQueryDepth int                        `json:"maxQueryDepth,omitempty"` // max depth of query graph
+	MaxViewDepth  int                        `json:"maxViewDepth,omitempty"`  // max depth of object graph
+	NextQueryId   int                        `json:"nextQueryId,omitempty"`   // next query id (a number of queries)
+	NextViewId    int                        `json:"nextViewId,omitempty"`    // next view id (a number of views)
+	NextColumnId  int                        `json:"nextColumnId,omitempty"`  // next column id (a number of columns)
+	QueryGraph    map[int]SoqlQueryGraphLeaf `json:"queryGraph,omitempty"`    // query graph (child -> parent)
+	ViewGraph     map[int]SoqlViewGraphLeaf  `json:"viewGraph,omitempty"`     // object graph (child -> parent)
 	// TODO: MaxQueryDepth, Parameters, DateTimeLiterals
 }
 
