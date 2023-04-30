@@ -1,5 +1,13 @@
 # Changelog
 
+# v0.0.6
+* Add used functions, parameters, datetimeLiterals to meta info.
+* Set max query depth to meta info.
+* Add elapsed time to meta info.
+* Add query graph to meta info.
+* Add query id to ViewGraph.
+* [FIX] Fix query depth.
+
 # v0.0.5
 * Add Depth, QueryDepth, Query to QueryGraph.
 * Add view graph to query meta info.
