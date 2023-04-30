@@ -166,6 +166,7 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 			if len(field.Name) == 1 {
 				funcName = strings.ToLower(field.Name[0])
 			}
+			ctx.functions[strings.ToLower(funcName)] = struct{}{}
 
 			if conf.isFunctionParameter {
 				// Check function names not allowed in nested
@@ -318,6 +319,10 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 				"The fields() is not allowed in conditional clause or function parameter: " +
 					strings.Join(field.Name, "."))
 		}
+	case SoqlFieldInfo_ParameterizedValue:
+		ctx.parameters[strings.ToLower(field.Name[0])] = struct{}{}
+	case SoqlFieldInfo_DateTimeLiteralName:
+		ctx.dateTimeLiterals[strings.ToLower(field.Name[0])] = struct{}{}
 	}
 
 	return nil

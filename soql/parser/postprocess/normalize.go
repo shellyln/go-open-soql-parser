@@ -21,6 +21,9 @@ type normalizeQueryContext struct {
 	maxViewDepth       int
 	queryGraph         map[int]SoqlQueryGraphLeaf
 	viewGraph          map[int]SoqlViewGraphLeaf
+	functions          map[string]struct{}
+	parameters         map[string]struct{}
+	dateTimeLiterals   map[string]struct{}
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
@@ -328,8 +331,6 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 	}
 
-	// TODO: Associate with schema.
-
 	if err := ctx.buildPerObjectInfo(q); err != nil {
 		return err
 	}
@@ -352,6 +353,13 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			}
 			q.Fields[i] = field
 		}
+	}
+
+	if q.OffsetAndLimit.OffsetParamName != "" {
+		ctx.parameters[q.OffsetAndLimit.OffsetParamName] = struct{}{}
+	}
+	if q.OffsetAndLimit.LimitParamName != "" {
+		ctx.parameters[q.OffsetAndLimit.LimitParamName] = struct{}{}
 	}
 
 	savedViewIdMap := ctx.viewIdMap
@@ -426,6 +434,9 @@ func Normalize(q *SoqlQuery) error {
 		maxViewDepth:       0,
 		queryGraph:         make(map[int]SoqlQueryGraphLeaf),
 		viewGraph:          make(map[int]SoqlViewGraphLeaf),
+		functions:          make(map[string]struct{}),
+		parameters:         make(map[string]struct{}),
+		dateTimeLiterals:   make(map[string]struct{}),
 	}
 
 	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil, 1, nil); err != nil {
@@ -439,6 +450,9 @@ func Normalize(q *SoqlQuery) error {
 	q.Meta.MaxViewDepth = ctx.maxViewDepth
 	q.Meta.QueryGraph = ctx.queryGraph
 	q.Meta.ViewGraph = ctx.viewGraph
+	q.Meta.Functions = ctx.functions
+	q.Meta.Parameters = ctx.parameters
+	q.Meta.DateTimeLiterals = ctx.dateTimeLiterals
 
 	return nil
 }

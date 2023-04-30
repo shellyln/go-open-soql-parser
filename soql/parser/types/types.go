@@ -256,18 +256,20 @@ type SoqlQueryGraphLeaf struct {
 }
 
 type SoqlQueryMeta struct {
-	Version       string                     `json:"version,omitempty"`       // format version
-	Date          time.Time                  `json:"date,omitempty"`          // compiled datetime
-	ElapsedTime   time.Duration              `json:"elapsedTime,omitempty"`   // time taken to compile
-	Source        string                     `json:"source,omitempty"`        // source
-	MaxQueryDepth int                        `json:"maxQueryDepth,omitempty"` // max depth of query graph
-	MaxViewDepth  int                        `json:"maxViewDepth,omitempty"`  // max depth of object graph
-	NextQueryId   int                        `json:"nextQueryId,omitempty"`   // next query id (a number of queries)
-	NextViewId    int                        `json:"nextViewId,omitempty"`    // next view id (a number of views)
-	NextColumnId  int                        `json:"nextColumnId,omitempty"`  // next column id (a number of columns)
-	QueryGraph    map[int]SoqlQueryGraphLeaf `json:"queryGraph,omitempty"`    // query graph (child -> parent)
-	ViewGraph     map[int]SoqlViewGraphLeaf  `json:"viewGraph,omitempty"`     // object graph (child -> parent)
-	// TODO: Parameters, DateTimeLiterals
+	Version          string                     `json:"version,omitempty"`          // format version
+	Date             time.Time                  `json:"date,omitempty"`             // compiled datetime
+	ElapsedTime      time.Duration              `json:"elapsedTime,omitempty"`      // time taken to compile
+	Source           string                     `json:"source,omitempty"`           // source
+	MaxQueryDepth    int                        `json:"maxQueryDepth,omitempty"`    // max depth of query graph
+	MaxViewDepth     int                        `json:"maxViewDepth,omitempty"`     // max depth of object graph
+	NextQueryId      int                        `json:"nextQueryId,omitempty"`      // next query id (a number of queries)
+	NextViewId       int                        `json:"nextViewId,omitempty"`       // next view id (a number of views)
+	NextColumnId     int                        `json:"nextColumnId,omitempty"`     // next column id (a number of columns)
+	QueryGraph       map[int]SoqlQueryGraphLeaf `json:"queryGraph,omitempty"`       // query graph (child -> parent)
+	ViewGraph        map[int]SoqlViewGraphLeaf  `json:"viewGraph,omitempty"`        // object graph (child -> parent)
+	Functions        map[string]struct{}        `json:"functions,omitempty"`        // functions
+	Parameters       map[string]struct{}        `json:"parameters,omitempty"`       // parameters
+	DateTimeLiterals map[string]struct{}        `json:"dateTimeLiterals,omitempty"` // datetime literals
 }
 
 type SoqlQuery struct {
