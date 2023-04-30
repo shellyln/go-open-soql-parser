@@ -239,6 +239,11 @@ func TestParse2(t *testing.T) {
 				return
 			}
 
+			{
+				s := got.Meta.ElapsedTime.String()
+				t.Log(s)
+			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				// t.Errorf("Parse() = %v, want %v", got, tt.want)
 				// return

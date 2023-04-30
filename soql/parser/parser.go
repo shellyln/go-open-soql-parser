@@ -21,6 +21,12 @@ func init() {
 }
 
 func Parse(s string) (*types.SoqlQuery, error) {
+	meta := &types.SoqlQueryMeta{
+		Version: "0.9",
+		Date:    time.Now().UTC(),
+		Source:  s,
+	}
+
 	out, err := queryParser(*NewStringParserContext(s))
 	if err != nil {
 		pos := GetLineAndColPosition(s, out.SourcePosition, 4)
@@ -42,15 +48,14 @@ func Parse(s string) (*types.SoqlQuery, error) {
 
 	q := out.AstStack[0].Value.(types.SoqlQuery)
 
-	q.Meta = &types.SoqlQueryMeta{
-		Version: "0.9",
-		Date:    time.Now().UTC(),
-		Source:  s,
-	}
+	q.Meta = meta
 
 	if err := postprocess.Normalize(&q); err != nil {
 		return nil, err
 	}
+
+	endDate := time.Now()
+	q.Meta.ElapsedTime = endDate.Sub(q.Meta.Date)
 
 	return &q, nil
 }
