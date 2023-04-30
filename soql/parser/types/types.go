@@ -250,6 +250,7 @@ type SoqlViewGraphLeaf struct {
 
 type SoqlQueryGraphLeaf struct {
 	ParentQueryId int        `json:"parentQueryId"` // Query id of parent query
+	Depth         int        `json:"depth"`         // Depth on query graph
 	IsConditional bool       `json:"isConditional"` // Query is part of filter (where/having) condition or not
 	Query         *SoqlQuery `json:"-"`             // Query
 }

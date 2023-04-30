@@ -23,7 +23,7 @@ type normalizeQueryContext struct {
 }
 
 func (ctx *normalizeQueryContext) normalizeQuery(
-	qPlace soqlQueryPlace, q, callParentQuery *SoqlQuery, objNameMap map[string][]string) error {
+	qPlace soqlQueryPlace, q, callParentQuery *SoqlQuery, queryDepth int, objNameMap map[string][]string) error {
 
 	q.QueryId = ctx.queryId
 	ctx.queryId++
@@ -34,6 +34,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 	}
 	ctx.queryGraph[q.QueryId] = SoqlQueryGraphLeaf{
 		ParentQueryId: parentQueryId,
+		Depth:         queryDepth,
 		IsConditional: qPlace == soqlQueryPlace_ConditionalOperand,
 		Query:         q,
 	}
@@ -101,7 +102,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			field := q.GroupBy[i]
 
 			if err := ctx.normalizeFieldName(
-				&field, soqlQueryPlace_ConditionalOperand, q,
+				&field, soqlQueryPlace_ConditionalOperand, q, queryDepth,
 				objNameMap, nil, normalizeFieldNameConf{
 					isSelectClause:          false,
 					isWhereClause:           false,
@@ -124,7 +125,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		if field.Type != SoqlFieldInfo_SubQuery {
 			if err := ctx.normalizeFieldName(
-				&field, soqlQueryPlace_Select, q,
+				&field, soqlQueryPlace_Select, q, queryDepth,
 				objNameMap, groupingFields, normalizeFieldNameConf{
 					isSelectClause:          true,
 					isWhereClause:           false,
@@ -174,7 +175,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			condition := q.Where[i]
 			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type != SoqlFieldInfo_SubQuery {
 				if err := ctx.normalizeFieldName(
-					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
+					&condition.Value, soqlQueryPlace_ConditionalOperand, q, queryDepth,
 					objNameMap, nil, normalizeFieldNameConf{
 						isSelectClause:          false,
 						isWhereClause:           true,
@@ -201,7 +202,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			condition := q.Having[i]
 			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type != SoqlFieldInfo_SubQuery {
 				if err := ctx.normalizeFieldName(
-					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
+					&condition.Value, soqlQueryPlace_ConditionalOperand, q, queryDepth,
 					objNameMap, groupingFields, normalizeFieldNameConf{
 						isSelectClause:          false,
 						isWhereClause:           false,
@@ -235,7 +236,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 			if !aliasFound {
 				if err := ctx.normalizeFieldName(
-					&field, soqlQueryPlace_ConditionalOperand, q,
+					&field, soqlQueryPlace_ConditionalOperand, q, queryDepth,
 					objNameMap, nil, normalizeFieldNameConf{
 						isSelectClause:          false,
 						isWhereClause:           false,
@@ -285,7 +286,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			ParentViewId: q.From[i].ParentViewId,
 			QueryId:      q.QueryId,
 			Depth:        objDepth,
-			QueryDepth:   ctx.headObjDepthOffset + 1,
+			QueryDepth:   queryDepth,
 			Object:       &q.From[i],
 			Query:        q,
 		}
@@ -333,7 +334,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 		if field.Type == SoqlFieldInfo_SubQuery {
 			if err := ctx.normalizeFieldName(
-				&field, soqlQueryPlace_Select, q,
+				&field, soqlQueryPlace_Select, q, queryDepth,
 				objNameMap, groupingFields, normalizeFieldNameConf{
 					isSelectClause:          true,
 					isWhereClause:           false,
@@ -362,7 +363,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			condition := q.Where[i]
 			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type == SoqlFieldInfo_SubQuery {
 				if err := ctx.normalizeFieldName(
-					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
+					&condition.Value, soqlQueryPlace_ConditionalOperand, q, queryDepth,
 					objNameMap, nil, normalizeFieldNameConf{
 						isSelectClause:          false,
 						isWhereClause:           true,
@@ -383,7 +384,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			condition := q.Having[i]
 			if condition.Opcode == SoqlConditionOpcode_FieldInfo && condition.Value.Type == SoqlFieldInfo_SubQuery {
 				if err := ctx.normalizeFieldName(
-					&condition.Value, soqlQueryPlace_ConditionalOperand, q,
+					&condition.Value, soqlQueryPlace_ConditionalOperand, q, queryDepth,
 					objNameMap, groupingFields, normalizeFieldNameConf{
 						isSelectClause:          false,
 						isWhereClause:           false,
@@ -421,7 +422,7 @@ func Normalize(q *SoqlQuery) error {
 		queryGraph:         make(map[int]SoqlQueryGraphLeaf),
 	}
 
-	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil, nil); err != nil {
+	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil, 1, nil); err != nil {
 		return err
 	}
 

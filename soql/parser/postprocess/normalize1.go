@@ -40,7 +40,7 @@ func preScanFunctionFields(field *SoqlFieldInfo, q *SoqlQuery) {
 }
 
 func (ctx *normalizeQueryContext) normalizeFieldName(
-	field *SoqlFieldInfo, qPlace soqlQueryPlace, q *SoqlQuery,
+	field *SoqlFieldInfo, qPlace soqlQueryPlace, q *SoqlQuery, queryDepth int,
 	objNameMap map[string][]string,
 	groupingFields map[string]struct{},
 	conf normalizeFieldNameConf) error {
@@ -254,7 +254,7 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 
 			for i := 0; i < len(field.Parameters); i++ {
 				if err := ctx.normalizeFieldName(
-					&field.Parameters[i], qPlace, q,
+					&field.Parameters[i], qPlace, q, queryDepth,
 					objNameMap, groupingFields, normalizeFieldNameConf{
 						isSelectClause:          conf.isSelectClause,
 						isWhereClause:           conf.isWhereClause,
@@ -309,7 +309,7 @@ func (ctx *normalizeQueryContext) normalizeFieldName(
 		if conf.isSelectClause {
 			field.SubQuery.Parent = q
 		}
-		if err := ctx.normalizeQuery(qPlace, field.SubQuery, q, objNameMap); err != nil {
+		if err := ctx.normalizeQuery(qPlace, field.SubQuery, q, queryDepth+1, objNameMap); err != nil {
 			return err
 		}
 	case SoqlFieldInfo_FieldSet:
