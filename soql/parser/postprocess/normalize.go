@@ -304,10 +304,6 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 	}
 
-	// TODO: * check object graph when aggregation(group by)
-	//           * subquery on select clause is not allowed.
-	//           * ...
-
 	ctx.assignColumnIds(q)
 
 	ctx.assignImplicitAliasNames(q, fieldAliasMap)
@@ -364,6 +360,16 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 	}
 	if q.OffsetAndLimit.LimitParamName != "" {
 		ctx.parameters[q.OffsetAndLimit.LimitParamName] = struct{}{}
+	}
+
+	if q.IsAggregation {
+		for i := 0; i < len(q.Fields); i++ {
+			if q.Fields[i].Type == SoqlFieldInfo_SubQuery {
+				return errors.New(
+					"Subquery on aggregation query is not allowed: " +
+						strings.Join(q.From[0].Name, "."))
+			}
+		}
 	}
 
 	savedViewIdMap := ctx.viewIdMap

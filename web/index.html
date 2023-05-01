@@ -63,49 +63,19 @@
         <div class="input-area">
             <textarea id="soql" name="soql" rows="35" cols="120"
 >SELECT
-  -- FIELDS(all)
-    acc.Id xid
-  , foo__r.bar__r.zzz
-  , foo__r.yyy
-  , con.Name xname
-  , con.acc.ddd xddd
-  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
-  , FLAT(acc.Name)
-  , (SELECT Id FROM con.Departments) qwerty
+    Id
+  , Name
+  , Contact.Id
+  , Contact.Name
 FROM
-    Contact con
-  , con.Account acc
-  , PPP.QQQ.RRR r3
+    Account
 WHERE
-    not (Name like 'a%' or Name like 'b%')
-    and
-    Name in ('a', 'b', 'c', null)
-    and
-    Name in (select x from Foobar)
-    and
-    Name &gt; 0001-01-02
-    and
-    (((Name &gt; 0001-01-02T01:01:01.123456789Z)
+    Contact.Name like 'Jane %'
     or
-    Name = :param1))
-    and
-    con.Name = acc.Name
-    and
-    LEN(con.Name) > 0
-GROUP BY
-    acc.Name
-  , con.Name
-  , xid
-  , foo__r.bar__r.zzz
-  , foo__r.yyy
-  , con.acc.ddd
-HAVING
-    LEN(MAX(con.Name)) &gt; FOO(0)
-    and
-    LEN(MAX(con.Name)) &gt; 0
+    Contact.Name like 'John %'
 ORDER BY
-    acc.Id desc nulls last
-  , con.Name
+    Name desc nulls last
+  , Id
 OFFSET 1000 LIMIT 100
 FOR update viewstat, tracking
 </textarea>

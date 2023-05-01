@@ -200,6 +200,129 @@ func TestParse2(t *testing.T) {
 				con.Name = acc.Name
 				and
 				LEN(con.Name) > 0
+			ORDER BY
+			    acc.Name desc nulls last
+			  --, acc.Id desc nulls last
+			  , xid
+			  , con.Name
+			OFFSET 1000 LIMIT 100
+			FOR update viewstat, tracking
+		`},
+		want:    nil,
+		wantErr: false,
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.dbgBreak {
+				t.Log("debug")
+			}
+
+			got, err := parser.Parse(tt.args.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
+
+			{
+				s := got.Meta.ElapsedTime.String()
+				t.Log(s)
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				// t.Errorf("Parse() = %v, want %v", got, tt.want)
+				// return
+				t.Logf("Parse() = %v, want %v", got, tt.want)
+			}
+
+			jsonBytes1, err := json.Marshal(got)
+			if err != nil {
+				t.Errorf("json.Marshal() (1) error = %v", err)
+				return
+			}
+			var unmarshal1 types.SoqlQuery
+			err = json.Unmarshal(jsonBytes1, &unmarshal1)
+			if err != nil {
+				t.Errorf("json.Unmarshal() (1) error = %v", err)
+				return
+			}
+
+			jsonBytes2, err := json.Marshal(unmarshal1)
+			if err != nil {
+				t.Errorf("json.Marshal() (2) error = %v", err)
+				return
+			}
+			var unmarshal2 types.SoqlQuery
+			err = json.Unmarshal(jsonBytes2, &unmarshal2)
+			if err != nil {
+				t.Errorf("json.Unmarshal() (2) error = %v", err)
+				return
+			}
+			if string(jsonBytes1) != string(jsonBytes2) {
+				t.Errorf("Marshal(1) = %v, Marshal(2) %v", string(jsonBytes1), string(jsonBytes2))
+				return
+			}
+
+			jsonBytes3, err := json.Marshal(unmarshal2)
+			if err != nil {
+				t.Errorf("json.Marshal() (3) error = %v", err)
+				return
+			}
+			if string(jsonBytes1) != string(jsonBytes3) {
+				t.Errorf("Marshal(1) = %v, Marshal(3) %v", string(jsonBytes1), string(jsonBytes3))
+				return
+			}
+		})
+	}
+}
+
+func TestParse3(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		want     interface{}
+		wantErr  bool
+		dbgBreak bool
+	}{{
+		name: "1",
+		args: args{s: `
+			SELECT
+			    acc.Id xid
+			  --, con.foo__r.xxx
+			  , foo__r.bar__r.zzz
+			  , foo__r.yyy
+			  , con.Name xname
+			  , con.acc.ddd xddd
+			  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
+			  , FLAT(acc.Name)
+			FROM
+			    Contact con
+			  , con.Account acc
+			  , PPP.QQQ.RRR r3
+			WHERE
+			    not (Name like 'a%' or Name like 'b%')
+				and
+				acc.Name in ('a', 'b', 'c', null)
+				and
+				acc.Id in ('a', 'b', 'c', null)
+				and
+				r3.Name in (select x,Id,Name from Contact)
+				and
+				Name > 0001-01-02
+				and
+				(((Name > 0001-01-02T01:01:01.123456789Z)
+				or
+				Name = :param1))
+				and
+				con.Name = acc.Name
+				and
+				LEN(con.Name) > 0
 			GROUP BY
 			    acc.Name
 			  --, acc.Id
