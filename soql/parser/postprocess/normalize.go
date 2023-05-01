@@ -297,7 +297,7 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 			Depth:        objDepth,
 			QueryDepth:   queryDepth,
 			Many:         qPlace == soqlQueryPlace_Select && i == 0,
-			InnerJoin:    q.From[i].InnerJoin,
+			InnerJoin:    false, // set later
 			NonResult:    qPlace == soqlQueryPlace_ConditionalOperand,
 			Object:       &q.From[i],
 			Query:        q,
@@ -333,6 +333,12 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 
 	if err := ctx.buildPerObjectInfo(q); err != nil {
 		return err
+	}
+
+	for i := 0; i < len(q.From); i++ {
+		leaf := ctx.viewGraph[q.From[i].ViewId]
+		leaf.InnerJoin = q.From[i].InnerJoin
+		ctx.viewGraph[q.From[i].ViewId] = leaf
 	}
 
 	for i := 0; i < len(q.Fields); i++ {
@@ -451,6 +457,37 @@ func Normalize(q *SoqlQuery) error {
 
 	if err := ctx.normalizeQuery(soqlQueryPlace_Primary, q, nil, 1, nil); err != nil {
 		return err
+	}
+
+	// Propagate InnerJoin and NonResult of ctx.viewGraph
+	for k := range ctx.viewGraph {
+		leaf := ctx.viewGraph[k]
+		if leaf.InnerJoin {
+			next := leaf.ParentViewId
+			for next != 0 {
+				l2 := ctx.viewGraph[next]
+				if l2.Depth == 1 || l2.Many || l2.QueryId != leaf.QueryId {
+					break
+				}
+				l2.InnerJoin = true
+				ctx.viewGraph[next] = l2
+				next = l2.ParentViewId
+			}
+		}
+		if leaf.NonResult {
+			var applyNonResult func(next int)
+			applyNonResult = func(next int) {
+				for w := range ctx.viewGraph {
+					l2 := ctx.viewGraph[w]
+					if l2.ParentViewId == next {
+						l2.NonResult = true
+						ctx.viewGraph[w] = l2
+						applyNonResult(w)
+					}
+				}
+			}
+			applyNonResult(k)
+		}
 	}
 
 	q.Meta.NextQueryId = ctx.queryId

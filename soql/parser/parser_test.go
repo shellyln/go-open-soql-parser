@@ -177,7 +177,7 @@ func TestParse2(t *testing.T) {
 			  , CONCAT(TRIM(acc.Name), '/', TRIM(con.Name), 123.45, 0xacc0) cname
 			  , FLAT(acc.Name)
 			  , (SELECT Id FROM con.Departments where uuu=con.Zzz and vvv=con.Id) qwerty
-			  , (select Id from r3.lkjh)
+			  , (select Id from r3.lkjh where name='www')
 			FROM
 			    Contact con
 			  , con.Account acc
@@ -189,7 +189,7 @@ func TestParse2(t *testing.T) {
 				and
 				acc.Id in ('a', 'b', 'c', null)
 				and
-				r3.Name in (select x,Id,Name from Contact)
+				r3.Name in (select x,Id,Name,(select w from ghjksfd) from Contact)
 				and
 				Name > 0001-01-02
 				and
@@ -200,6 +200,8 @@ func TestParse2(t *testing.T) {
 				con.Name = acc.Name
 				and
 				LEN(con.Name) > 0
+				and
+				foo__r.bar__r.zzz = 1
 			ORDER BY
 			    acc.Name desc nulls last
 			  --, acc.Id desc nulls last

@@ -87,10 +87,6 @@ CHECK_FIELDS:
 			}
 		}
 	}
-	if !hasConditionsOriginally {
-		// TODO: More conditions?
-		innerJoined = true
-	}
 
 	for i := 0; i < len(conditions); i++ {
 		cond := conditions[i]
@@ -362,6 +358,7 @@ func (ctx *normalizeQueryContext) buildPerObjectInfo(q *SoqlQuery) error {
 
 		perObjQuery.For = q.For
 	}
+	q.From[0].InnerJoin = false
 
 	if err := makePostProcessWhereClause(q); err != nil {
 		return err
