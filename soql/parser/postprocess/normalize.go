@@ -291,10 +291,14 @@ func (ctx *normalizeQueryContext) normalizeQuery(
 		}
 
 		ctx.viewGraph[q.From[i].ViewId] = SoqlViewGraphLeaf{
+			Name:         q.From[i].Name[len(q.From[i].Name)-1],
 			ParentViewId: q.From[i].ParentViewId,
 			QueryId:      q.QueryId,
 			Depth:        objDepth,
 			QueryDepth:   queryDepth,
+			Many:         qPlace == soqlQueryPlace_Select && i == 0,
+			InnerJoin:    q.From[i].InnerJoin,
+			NonResult:    qPlace == soqlQueryPlace_ConditionalOperand,
 			Object:       &q.From[i],
 			Query:        q,
 		}

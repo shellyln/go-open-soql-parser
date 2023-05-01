@@ -240,12 +240,16 @@ type SoqlForClause struct {
 }
 
 type SoqlViewGraphLeaf struct {
-	ParentViewId int             `json:"parentViewId"` // View id of parent object on object graph
-	QueryId      int             `json:"queryId"`      // Query unique id
-	Depth        int             `json:"depth"`        // Depth on object graph
-	QueryDepth   int             `json:"queryDepth"`   // Query depth
-	Object       *SoqlObjectInfo `json:"-"`            // Object
-	Query        *SoqlQuery      `json:"-"`            // Query
+	Name         string          `json:"name"`                // Name
+	ParentViewId int             `json:"parentViewId"`        // View id of parent object on object graph
+	QueryId      int             `json:"queryId"`             // Query unique id
+	Depth        int             `json:"depth"`               // Depth on object graph
+	QueryDepth   int             `json:"queryDepth"`          // Query depth
+	Many         bool            `json:"many,omitempty"`      // True if it is one-to-many relationship (subquery)
+	InnerJoin    bool            `json:"innerJoin,omitempty"` // Inner join to parent view id
+	NonResult    bool            `json:"nonResult,omitempty"` // True if it is subquery on conditions (where | having clause)
+	Object       *SoqlObjectInfo `json:"-"`                   // Object
+	Query        *SoqlQuery      `json:"-"`                   // Query
 }
 
 type SoqlQueryGraphLeaf struct {
