@@ -12,6 +12,7 @@ Open source implementation of the SOQL parser for Go.
 ## 🧭 Examples
 
 * [Live demo](https://shellyln.github.io/soql/)
+* [SOQL query visualizer](https://shellyln.github.io/soql-visualizer/)
 
 ## 🚀 Getting started
 
@@ -56,6 +57,10 @@ func main() {
 * Polymorphic Fields
 * "null Values in Lookup Relationships and Outer Joins" - If an object has a conditional expression whose right hand side is null, it is not a condition for inner join.
     * cf. "Using Relationship Queries" - If the condition is complete within the parent object (no "or" across relationships), it is inner joined.
+
+## 🔗 Related projects
+* [GraphDT](https://github.com/shellyln/go-graphdt) - Datatable
+* [go-open-soql-visualizer](https://github.com/shellyln/go-open-soql-visualizer) - Visualizer
 
 ## ⚖️ License
 
