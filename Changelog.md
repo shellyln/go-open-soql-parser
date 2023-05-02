@@ -1,5 +1,10 @@
 # Changelog
 
+# v0.0.7
+* Add many, inneJoin, nonResult flags to meta info.
+* Add checking that subquery on select clause is not allowed with aggregation query.
+* Edit README.
+
 # v0.0.6
 * Add used functions, parameters, datetimeLiterals to meta info.
 * Set max query depth to meta info.
