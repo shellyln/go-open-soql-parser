@@ -61,6 +61,12 @@ func main() {
 ## 🔗 Related projects
 * [GraphDT](https://github.com/shellyln/go-graphdt) - Datatable
 * [go-open-soql-visualizer](https://github.com/shellyln/go-open-soql-visualizer) - Visualizer
+* [Open SOQL (JavaScript)](https://github.com/shellyln/open-soql) - JavaScript implementation
+
+## 🙋 FAQ
+* What does `SOQL` stand for?
+  * 👉 In `Open SOQL`, `SOQL` stands for `SOQL is Object Query Language`.
+  * 👉 In [original SOQL](https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql.htm), `SOQL` stands for `Salesforce Object Query Language`.
 
 ## ⚖️ License
 
