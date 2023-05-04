@@ -1,3 +1,4 @@
+// Open source implementation of the SOQL parser (Postprocessing phase).
 package postprocess
 
 import (

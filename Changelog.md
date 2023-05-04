@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.8
+* Edit package comments.
+
 # v0.0.7
 * Add many, inneJoin, nonResult flags to meta info.
 * Add checking that subquery on select clause is not allowed with aggregation query.

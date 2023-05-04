@@ -1,3 +1,4 @@
+// Open source implementation of the SOQL parser (Lexical analysis and parsing phase).
 package core
 
 import (
