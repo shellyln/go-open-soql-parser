@@ -91,6 +91,18 @@ func TestParse(t *testing.T) {
 		want:     nil,
 		wantErr:  false,
 		dbgBreak: true,
+	}, {
+		name:     "Fix bug (2025-01-08) #1",
+		args:     args{s: `SELECT Id FROM Contact WHERE LastName = 'bar' or (Name = 'bar' and LastName = 'foo')`},
+		want:     nil,
+		wantErr:  false,
+		dbgBreak: true,
+	}, {
+		name:     "Fix bug (2025-01-08) #2",
+		args:     args{s: `SELECT Id FROM Contact WHERE LastName = 'bar' OR (Name = 'bar' AND LastName = 'foo')`},
+		want:     nil,
+		wantErr:  false,
+		dbgBreak: true,
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
