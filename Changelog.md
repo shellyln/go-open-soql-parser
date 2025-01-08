@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.0.9
+* [FIX] If the logical operator contained uppercase letters, production rule failed.
+
 # v0.0.8
 * Edit package comments.
 
