@@ -160,6 +160,7 @@ tinywasm:
 	    -tags wasm \
 	    -no-debug \
 	    -stack-size 512kB \
+	    -ldflags="-X \"main.Version=$(VERSION)\" -X \"main.Revision=$(REVISION)\"" \
 	    -o $(BIN_WASM) $(TARGET_WASM)
 
 
