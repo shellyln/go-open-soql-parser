@@ -1,6 +1,8 @@
 package core
 
 import (
+	"strings"
+
 	. "github.com/shellyln/takenoco/base"
 	objparser "github.com/shellyln/takenoco/object"
 )
@@ -31,7 +33,7 @@ func makeOpMatcher(className string, ops []string) func(c interface{}) bool {
 		}
 		val := ast.Value.(string)
 		for _, op := range ops {
-			if op == val {
+			if strings.EqualFold(op, val) {
 				return true
 			}
 		}
